@@ -325,12 +325,14 @@
         await loadLocale(initial);
       })();
 
-      // changement de langue
-      select.addEventListener('change', e => {
-        const lang = e.target.value;
-        localStorage.setItem('site-lang', lang);
-        loadLocale(lang);
-      });
+            // changement de langue — revenir à l'accueil (`#bienvenue`) avant de charger la locale
+            select.addEventListener('change', e => {
+                const lang = e.target.value;
+                localStorage.setItem('site-lang', lang);
+                // remplacer l'ancre actuelle sans ajouter une entrée d'historique
+                history.replaceState(null, '', '#bienvenue');
+                loadLocale(lang);
+            });
 
       // intercepter les ancres internes
       root.addEventListener('click', e => {
