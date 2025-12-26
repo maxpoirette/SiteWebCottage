@@ -14,115 +14,88 @@ Site web de location de vacances à Parentis-en-Born dans les Landes, entre lac 
 - 🗺️ **Navigation intuitive** : Scroll fluide vers les différentes sections
 - 📧 **Formulaire de contact** : Pour les demandes de réservation
 - 🔗 **Intégration Airbnb** : Lien vers le futur compte Airbnb
+# 🏡 Site Web Cottage - Parentis-en-Born
 
-## 📋 Sections du Site
+Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le projet a été refactoré : le contenu multilingue est externalisé dans `locales/` et les ressources (images, textes courts) sont paramétrées via `locales/site-vars.json` pour un maintien plus simple.
 
-### 🏠 Accueil
-Présentation de la région des Landes avec :
-- **L'Océan Atlantique** : Plages de Biscarrosse et Mimizan à 20 km
-- **Le Lac de Parentis** : 3600 hectares, sports nautiques, baignade
-- **La Forêt Landaise** : Parc Naturel Régional, pistes cyclables
+## 🌍 Démo
 
-### 🏘️ La Résidence
-Équipements de la résidence :
-- Parking privé sécurisé
-- Piscine commune
-- Espaces verts aménagés
-- Sécurité avec digicode
+🔗 **[Voir le site en ligne](https://maxpoirette.github.io/SiteWebCottage/)**
 
-### 🛏️ Le Logement
-Appartement 4 personnes avec :
-- 2 chambres (1 lit double + 2 lits simples)
-- Salon avec canapé convertible
-- Cuisine entièrement équipée
-- Salle de bain moderne
-- WiFi, lave-linge, chauffage
+## Principaux changements récents
 
-### 📞 Contact
-Formulaire de contact et lien vers Airbnb (à venir)
+- Externalisation des contenus par langue : `locales/<code>.html` (ex : `fr.html`, `en.html`, `nl.html`, `de.html`, `es.html`).
+- Variables centralisées : `locales/site-vars.json` contient les chemins d'images et petits textes modifiables (`{{IMG_*}}`, `{{AIRBNB_TEXT}}`, `{{YEAR}}`).
+- Le `index.html` charge dynamiquement la locale via `fetch` et remplace les tokens.
+- Les images sont dans `photos/` et référencées depuis `site-vars.json`.
 
-## 🛠️ Technologies Utilisées
+## Fichiers importants
 
-- **HTML5** : Structure sémantique
-- **CSS3** : Styles modernes avec Grid et Flexbox
-- **JavaScript (Vanilla)** : Interactivité sans framework
-  
-## 🎨 Personnalisation
+- `index.html` : page principale, loader des locales et JS de navigation
+- `locales/` : dossier contenant un fichier HTML par langue (fr,en,es,nl,de)
+- `locales/site-vars.json` : variables centralisées (images, year, airbnb text)
+- `photos/` : images (ex : `biscarrosse-plage-768x506.webp`)
 
-### Modifier les couleurs
+## Tokens disponibles dans les fichiers `locales/*.html`
 
-Dans `index.html`, section `<style>`, modifiez les variables :
+- `{{IMG_OCEAN}}` — image de l'Océan
+- `{{IMG_LAC}}` — image du Lac
+- `{{IMG_FORET}}` — image de la Forêt
+- `{{AIRBNB_TEXT}}` — texte du lien Airbnb
+- `{{YEAR}}` — année affichée en footer
 
-```css
-/* Couleur principale (actuellement vert forêt) */
-background: linear-gradient(135deg, #2d7a4f 0%, #1e5738 100%);
+Remplacez ces tokens dans les fichiers `locales/*.html` si besoin, ou modifiez `locales/site-vars.json` pour changer images/textes sans toucher les fichiers de contenu.
 
-/* Pour changer en bleu par exemple */
-background: linear-gradient(135deg, #0077be 0%, #005a8d 100%);
+## Développement / Debug
+
+Important : l'application charge les fragments de `locales/` via `fetch`. Ouvrir `index.html` en `file://` entraîne des échecs de chargement. Lancez un serveur local pour le développement :
+
+```bash
+cd /Users/Maxime/Desktop/SiteWebCottage/SiteWebCottage
+python3 -m http.server 8000
+# puis ouvrez http://localhost:8000
 ```
 
-### Ajouter une langue
+Alternatives : `http-server` (npm) ou l'extension Live Server de VS Code.
 
-1. Dupliquer une section `<div class="lang-content" data-lang="XX">`
-2. Modifier l'attribut `data-lang` avec le code langue
-3. Traduire tout le contenu
-4. Ajouter l'option dans le sélecteur :
-```html
-<option value="XX">🏳️ Nom Langue</option>
+### Cache
+Le loader utilise `fetch(..., {cache: 'no-cache'})` par défaut pour éviter des problèmes de cache côté navigateur. En développement vous pouvez aussi désactiver le cache dans l'onglet Réseau des DevTools.
+
+## Ajouter / Mettre à jour une langue
+
+1. Créer `locales/xx.html` (où `xx` est le code langue).
+2. Utiliser les mêmes `id` de sections (`#accueil`, `#residence`, `#logement`, `#contact`) dans le fichier.
+3. Utiliser les tokens `{{IMG_OCEAN}}`, `{{IMG_LAC}}`, `{{IMG_FORET}}` pour les images.
+4. Ajouter l'option correspondante dans le sélecteur de langue dans `index.html` si nécessaire.
+
+## Modifier les images / textes centralisés
+
+Éditez `locales/site-vars.json`. Exemple :
+
+```json
+{
+	"images": {
+		"OCEAN": "photos/biscarrosse-plage-768x506.webp",
+		"LAC": "photos/parentis-en-born-landes-1617x1080.webp",
+		"FORET": "photos/foret-landes-640x360.webp"
+	},
+	"airbnb_text": "📍 Réserver via Airbnb (bientôt)",
+	"year": "2024"
+}
 ```
 
-### Modifier le contenu
+Après modification, rechargez la page (ou utilisez la console DevTools pour forcer le reload).
 
-Chaque section est facilement identifiable par son `id` :
-- `#accueil` : Présentation de la région
-- `#residence` : Équipements de la résidence
-- `#logement` : Détails du logement
-- `#contact` : Formulaire de contact
+## Bonnes pratiques
 
-## 📊 Statistiques du Code
+- Servez toujours le site via HTTP pendant le développement.
+- Modifiez les textes dans `locales/*.html` et les ressources dans `locales/site-vars.json` pour minimiser l'impact des changements.
 
-- **Lignes de code** : ~1500
-- **Taille du fichier** : ~45 KB
-- **Temps de chargement** : < 1 seconde
-- **Score Performance** : 95+/100
-- **Accessibilité** : Conforme WCAG 2.1
-
-## 🌐 Langues Disponibles
-
-| Langue | Code | Statut |
-|--------|------|--------|
-| 🇫🇷 Français | `fr` | ✅ Complet |
-| 🇬🇧 English | `en` | ✅ Complet |
-| 🇪🇸 Español | `es` | ✅ Complet |
-| 🇳🇱 Nederlands | `nl` | ✅ Complet |
-| 🇩🇪 Deutsch | `de` | ✅ Complet |
-
-## 📝 Roadmap
-
-### Version Actuelle (v1.0)
-- [x] Site multilingue (5 langues)
-- [x] Design responsive
-- [x] Navigation fluide
-- [x] Formulaire de contact
-- [x] Tests automatisés
-
-### Prochaines Fonctionnalités (v1.1)
-- [ ] Ajout de photos
-- [ ] Carte interactive de localisation
-- [ ] Intégration Airbnb complète
-- [ ] Témoignages clients
-- [ ] Notifications par email
-
-## Environnement dev / debug
-Action sur le poste : 
-# cd ../Desktop/SiteWebCottage/SiteWebCottage
-# python3 -m http.server 8000
-# puis ouvrir http://localhost:8000
-
-## 📧 Contact
+## Contact
 
 **Propriétaire** : Max Poirette  
 **Email** : [Votre email]  
 **GitHub** : [@maxpoirette](https://github.com/maxpoirette)  
 **Projet** : [SiteWebCottage](https://github.com/maxpoirette/SiteWebCottage)
+
 
