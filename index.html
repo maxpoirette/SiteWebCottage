@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Vacances - Parentis-en-Born, Landes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .language-selector select {
+            padding: 8px 12px;
+            border: 2px solid #2d7a4f;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .lang-content {
+            display: none;
+        }
+
+        .lang-content[data-lang="fr"] {
+            display: block;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #2d7a4f 0%, #1e5738 100%);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            padding: 0 20px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(45,122,79,0.7), rgba(30,87,56,0.7)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%232d7a4f" width="1200" height="600"/><path fill="%23fff" opacity="0.1" d="M0,400 Q300,300 600,400 T1200,400 L1200,600 L0,600 Z"/><circle fill="%23fff" opacity="0.05" cx="200" cy="150" r="80"/><circle fill="%23fff" opacity="0.05" cx="900" cy="200" r="60"/></svg>');
+            background-size: cover;
+            background-position: center;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        h2 {
+            color: #2d7a4f;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #2d7a4f;
+            margin-bottom: 1rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: #2d7a4f;
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2d7a4f;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2d7a4f 0%, #1e5738 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .airbnb-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #FF5A5F;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .airbnb-link:hover {
+            transform: scale(1.02);
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            section {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <select id="languageSelect">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="nl">🇳🇱 Nederlands</option>
+            <option value="de">🇩🇪 Deutsch</option>
+        </select>
+    </div>
+
+    <!-- FRANÇAIS -->
+    <div class="lang-content" data-lang="fr">
+        <nav>
+            <ul>
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#residence">Résidence</a></li>
+                <li><a href="#logement">Logement</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Bienvenue à Parentis-en-Born</h1>
+                <p>Votre séjour entre lac et océan dans les Landes</p>
+            </div>
+        </div>
+
+        <section id="accueil">
+            <h2>Découvrez les Landes</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Parentis-en-Born vous offre un cadre exceptionnel au cœur de la forêt des Landes de Gascogne, entre le grand lac et l'océan Atlantique.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🌊 L'Océan Atlantique</h3>
+                    <p>À seulement 20 km, profitez des magnifiques plages landaises de Biscarrosse et Mimizan. Surf, baignades et promenades sur le sable fin vous attendent sur la côte atlantique.</p>
+                </div>
+                <div class="card">
+                    <h3>🏞️ Le Lac de Parentis</h3>
+                    <p>L'un des plus grands lacs des Landes (3600 hectares) avec ses eaux tièdes et peu profondes, idéal pour la baignade, les sports nautiques, le ski nautique, le wakeboard et la pêche aux carnassiers.</p>
+                </div>
+                <div class="card">
+                    <h3>🌲 La Forêt Landaise</h3>
+                    <p>Découvrez la majestueuse forêt de pins, le Parc Naturel Régional des Landes de Gascogne, et parcourez la célèbre Vélodyssée à vélo le long de pistes cyclables sécurisées.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="residence">
+            <h2>La Résidence</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Une résidence moderne et sécurisée avec tous les équipements pour votre confort.
+            </p>
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">🅿️</div>
+                    <div>
+                        <h3>Parking Privé</h3>
+                        <p>Place de stationnement sécurisée incluse</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏊</div>
+                    <div>
+                        <h3>Piscine</h3>
+                        <p>Piscine commune accessible en saison</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌳</div>
+                    <div>
+                        <h3>Espaces Verts</h3>
+                        <p>Jardins paysagers et aires de détente</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <div>
+                        <h3>Sécurité</h3>
+                        <p>Résidence fermée avec digicode</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="logement">
+            <h2>Le Logement</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Appartement confortable et entièrement équipé pour 4 personnes.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🛏️ Chambres</h3>
+                    <p><strong>2 chambres confortables</strong><br>
+                    - Chambre 1 : Lit double<br>
+                    - Chambre 2 : 2 lits simples<br>
+                    Literie de qualité, rangements</p>
+                </div>
+                <div class="card">
+                    <h3>🛋️ Salon</h3>
+                    <p><strong>Espace de vie lumineux</strong><br>
+                    Canapé convertible, TV écran plat, WiFi, table à manger, accès balcon</p>
+                </div>
+                <div class="card">
+                    <h3>🍳 Cuisine</h3>
+                    <p><strong>Cuisine équipée</strong><br>
+                    Réfrigérateur, four, plaques, micro-ondes, lave-vaisselle, cafetière, ustensiles</p>
+                </div>
+                <div class="card">
+                    <h3>🚿 Salle de bain</h3>
+                    <p><strong>Salle d'eau moderne</strong><br>
+                    Douche, WC, lavabo, sèche-cheveux, serviettes fournies</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="color: #2d7a4f; margin-bottom: 1rem;">✨ Équipements supplémentaires</h3>
+                <p>📶 WiFi haut débit • 🌡️ Chauffage • 🧺 Lave-linge • 🧹 Aspirateur • 👶 Lit bébé disponible sur demande</p>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <div class="contact-form">
+                <form>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Envoyer</button>
+                </form>
+                <a href="#" class="airbnb-link">📍 Réserver sur Airbnb (bientôt disponible)</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 Location Vacances Parentis-en-Born, Landes</p>
+        </footer>
+    </div>
+
+    <!-- ENGLISH -->
+    <div class="lang-content" data-lang="en">
+        <nav>
+            <ul>
+                <li><a href="#accueil">Home</a></li>
+                <li><a href="#residence">Residence</a></li>
+                <li><a href="#logement">Apartment</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Parentis-en-Born</h1>
+                <p>Your stay between lake and ocean in the Landes</p>
+            </div>
+        </div>
+
+        <section id="accueil">
+            <h2>Discover the Landes</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Parentis-en-Born offers an exceptional setting in the heart of the Landes de Gascogne forest, between the great lake and the Atlantic Ocean.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🌊 The Atlantic Ocean</h3>
+                    <p>Only 20 km away, enjoy the beautiful Landes beaches of Biscarrosse and Mimizan. Surfing, swimming and walks on fine sand await you on the Atlantic coast.</p>
+                </div>
+                <div class="card">
+                    <h3>🏞️ Parentis Lake</h3>
+                    <p>One of the largest lakes in the Landes (3600 hectares) with warm, shallow waters, ideal for swimming, water sports, water skiing, wakeboarding and predator fishing.</p>
+                </div>
+                <div class="card">
+                    <h3>🌲 The Landes Forest</h3>
+                    <p>Discover the majestic pine forest, the Landes de Gascogne Regional Natural Park, and cycle along the famous Vélodyssée on secure cycle paths.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="residence">
+            <h2>The Residence</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                A modern and secure residence with all amenities for your comfort.
+            </p>
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">🅿️</div>
+                    <div>
+                        <h3>Private Parking</h3>
+                        <p>Secure parking space included</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏊</div>
+                    <div>
+                        <h3>Swimming Pool</h3>
+                        <p>Shared pool accessible in season</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌳</div>
+                    <div>
+                        <h3>Green Spaces</h3>
+                        <p>Landscaped gardens and relaxation areas</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <div>
+                        <h3>Security</h3>
+                        <p>Gated residence with entry code</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="logement">
+            <h2>The Apartment</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Comfortable and fully equipped apartment for 4 people.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🛏️ Bedrooms</h3>
+                    <p><strong>2 comfortable bedrooms</strong><br>
+                    - Bedroom 1: Double bed<br>
+                    - Bedroom 2: 2 single beds<br>
+                    Quality bedding, storage</p>
+                </div>
+                <div class="card">
+                    <h3>🛋️ Living Room</h3>
+                    <p><strong>Bright living space</strong><br>
+                    Sofa bed, flat-screen TV, WiFi, dining table, balcony access</p>
+                </div>
+                <div class="card">
+                    <h3>🍳 Kitchen</h3>
+                    <p><strong>Equipped kitchen</strong><br>
+                    Refrigerator, oven, stove, microwave, dishwasher, coffee maker, utensils</p>
+                </div>
+                <div class="card">
+                    <h3>🚿 Bathroom</h3>
+                    <p><strong>Modern bathroom</strong><br>
+                    Shower, WC, sink, hair dryer, towels provided</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="color: #2d7a4f; margin-bottom: 1rem;">✨ Additional amenities</h3>
+                <p>📶 High-speed WiFi • 🌡️ Heating • 🧺 Washing machine • 🧹 Vacuum cleaner • 👶 Baby cot available on request</p>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <div class="contact-form">
+                <form>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Send</button>
+                </form>
+                <a href="#" class="airbnb-link">📍 Book on Airbnb (coming soon)</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 Vacation Rental Parentis-en-Born, Landes</p>
+        </footer>
+    </div>
+
+    <!-- ESPAÑOL -->
+    <div class="lang-content" data-lang="es">
+        <nav>
+            <ul>
+                <li><a href="#accueil">Inicio</a></li>
+                <li><a href="#residence">Residencia</a></li>
+                <li><a href="#logement">Alojamiento</a></li>
+                <li><a href="#contact">Contacto</a></li>
+            </ul>
+        </nav>
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Bienvenido a Parentis-en-Born</h1>
+                <p>Su estancia entre lago y océano en las Landas</p>
+            </div>
+        </div>
+
+        <section id="accueil">
+            <h2>Descubra las Landas</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Parentis-en-Born ofrece un entorno excepcional en el corazón del bosque de las Landas de Gascuña, entre el gran lago y el océano Atlántico.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🌊 El Océano Atlántico</h3>
+                    <p>A sólo 20 km, disfrute de las hermosas playas de las Landas de Biscarrosse y Mimizan. Surf, baños y paseos en arena fina le esperan en la costa atlántica.</p>
+                </div>
+                <div class="card">
+                    <h3>🏞️ El Lago de Parentis</h3>
+                    <p>Uno de los lagos más grandes de las Landas (3600 hectáreas) con aguas cálidas y poco profundas, ideal para nadar, deportes acuáticos, esquí acuático, wakeboard y pesca de depredadores.</p>
+                </div>
+                <div class="card">
+                    <h3>🌲 El Bosque de las Landas</h3>
+                    <p>Descubra el majestuoso bosque de pinos, el Parque Natural Regional de las Landas de Gascuña, y recorra en bicicleta la famosa Vélodyssée por carriles bici seguros.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="residence">
+            <h2>La Residencia</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Una residencia moderna y segura con todas las comodidades para su confort.
+            </p>
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">🅿️</div>
+                    <div>
+                        <h3>Aparcamiento Privado</h3>
+                        <p>Plaza de aparcamiento segura incluida</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏊</div>
+                    <div>
+                        <h3>Piscina</h3>
+                        <p>Piscina compartida accesible en temporada</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌳</div>
+                    <div>
+                        <h3>Espacios Verdes</h3>
+                        <p>Jardines paisajísticos y áreas de descanso</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <div>
+                        <h3>Seguridad</h3>
+                        <p>Residencia cerrada con código de acceso</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="logement">
+            <h2>El Alojamiento</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Apartamento confortable y totalmente equipado para 4 personas.
+            </p>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>🛏️ Dormitorios</h3>
+                    <p><strong>2 habitaciones confortables</strong><br>
+                    - Habitación 1: Cama doble<br>
+                    - Habitación 2: 2 camas individuales<br>
+                    Ropa de cama de calidad, armarios</p>
+                </div>
+                <div class="card">
+                    <h3>🛋️ Salón</h3>
+                    <p><strong>Espacio luminoso</strong><br>
+                    Sofá cama, TV pantalla plana, WiFi, mesa comedor, acceso balcón</p>
+                </div>
+                <div class="card">
+                    <h3>🍳 Cocina</h3>
+                    <p><strong>Cocina equipada</strong><br>
+                    Refrigerador, horno, placas, microondas, lavavajillas, cafetera, utensilios</p>
+                </div>
+                <div class="card">
+                    <h3>🚿 Baño</h3>
+                    <p><strong>Baño moderno</strong><br>
+                    Ducha, WC, lavabo, secador de pelo, toallas incluidas</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="color: #2d7a4f; margin-bottom: 1rem;">✨ Equipamiento adicional</h3>
+                <p>📶 WiFi alta velocidad • 🌡️ Calefacción • 🧺 Lavadora • 🧹 Aspiradora • 👶 Cuna disponible bajo petición</p>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contacto</h2>
+            <div class="contact-form">
+                <form>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel">
+                    </div>
+                    <div class="form-group">
+                        <label>Mensaje</label>
+                        <textarea required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Enviar</button>
+                </form>
+                <a href="#" class="airbnb-link">📍 Reservar en Airbnb (próximamente)</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 Alquiler Vacacional Parentis-en-Born, Landas</p>
+        </footer>
+    </div>
+
+    <!-- NEDERLANDS -->
+    <div class="lang-content" data-lang="nl">
+        <nav>
+            <ul>
+                <li><a href="#accueil">Home</a></li>
+                <li><a href="#residence">Residentie</a></li>
+                <li><a href="#logement">Accommodatie</a></li>
+                <li><a href="#contact">Contact</a></li
