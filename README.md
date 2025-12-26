@@ -1,10 +1,6 @@
 # 🏡 Site Web Cottage - Parentis-en-Born
 
-Site web de location de vacances à Parentis-en-Born dans les Landes, entre lac et océan Atlantique.
-
-## 🌍 Démo en Ligne
-
-🔗 **[Voir le site en ligne](https://maxpoirette.github.io/SiteWebCottage/)**
+Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le projet a été refactoré : le contenu multilingue est externalisé dans `locales/` et les ressources (images, textes courts) sont paramétrées via `locales/site-vars.json` pour un maintien plus simple.
 
 ## ✨ Fonctionnalités
 
@@ -14,13 +10,10 @@ Site web de location de vacances à Parentis-en-Born dans les Landes, entre lac 
 - 🗺️ **Navigation intuitive** : Scroll fluide vers les différentes sections
 - 📧 **Formulaire de contact** : Pour les demandes de réservation
 - 🔗 **Intégration Airbnb** : Lien vers le futur compte Airbnb
-# 🏡 Site Web Cottage - Parentis-en-Born
-
-Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le projet a été refactoré : le contenu multilingue est externalisé dans `locales/` et les ressources (images, textes courts) sont paramétrées via `locales/site-vars.json` pour un maintien plus simple.
 
 ## 🌍 Démo
 
-🔗 **[Voir le site en ligne](https://maxpoirette.github.io/SiteWebCottage/)**
+🔗 **[Voir le site en ligne](http://localhost:8000)**
 
 ## Principaux changements récents
 
