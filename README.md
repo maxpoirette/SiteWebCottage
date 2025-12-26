@@ -113,6 +113,12 @@ Chaque section est facilement identifiable par son `id` :
 - [ ] Témoignages clients
 - [ ] Notifications par email
 
+## Environnement dev / debug
+Action sur le poste : 
+# cd ../Desktop/SiteWebCottage/SiteWebCottage
+# python3 -m http.server 8000
+# puis ouvrir http://localhost:8000
+
 ## 📧 Contact
 
 **Propriétaire** : Max Poirette  
