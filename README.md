@@ -73,7 +73,7 @@ Le loader utilise `fetch(..., {cache: 'no-cache'})` par défaut pour éviter des
 		"FORET": "photos/foret-landes-640x360.webp"
 	},
 	"airbnb_text": "📍 Réserver via Airbnb (bientôt)",
-	"year": "2024"
+	"year": "2025"
 }
 ```
 
@@ -105,6 +105,10 @@ git commit -m "Votre message de commit clair"
 git push origin main
 ```
 
+- Exemple de commande groupée :
+```bash
+git add --all && git commit -m "Modification" || echo 'No changes to commit' && git push origin main
+```
 ## Contact
 
 **Propriétaire** : Max Poirette  
