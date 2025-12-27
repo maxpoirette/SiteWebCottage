@@ -89,71 +89,21 @@ Après modification, rechargez la page (ou utilisez la console DevTools pour for
 Utilise ces commandes pour ne rien oublier lors d'une mise à jour vers `origin/main`.
 
 - Se placer sur la branche principale et récupérer les dernières modifications :
-
 ```bash
 git checkout main
 git pull origin main
 ```
 
 - Stager et committer les changements locaux :
-
 ```bash
 git add .
 git commit -m "Votre message de commit clair"
 ```
 
-- Si vous ajoutez ou voulez ignorer les fichiers macOS (.DS_Store) :
-
-```bash
-echo '.DS_Store' >> .gitignore
-git rm --cached .DS_Store photos/.DS_Store || true
-git add .gitignore
-git commit -m "Ignore .DS_Store"
-```
-
 - Pousser sur GitHub :
-
 ```bash
 git push origin main
 ```
-
-- En cas d'erreur RPC / HTTP 400 lors du push (paquets trop volumineux) :
-
-```bash
-# augmenter le buffer de post
-git config http.postBuffer 524288000
-# compacter le dépôt
-git gc --prune=now --aggressive
-# réessayer
-git push origin main
-```
-
-- Pour gérer de gros fichiers (préférer Git LFS) :
-
-```bash
-# installer et configurer LFS (une seule fois)
-git lfs install
-git lfs track "*.jpg"
-git add .gitattributes
-git add path/to/large-file.jpg
-git commit -m "Add large file via LFS"
-git push origin main
-```
-
-- Si un fichier volumineux a déjà été poussé par erreur, utilisez `bfg` ou `git filter-repo` pour le supprimer de l'historique, puis force-push :
-
-```bash
-# Exemple (BFG) :
-# bfg --delete-files 'nom-fichier-gros.*'
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
-git push --force
-```
-
-Notes :
-- Préfère `git lfs` pour des médias volumineux plutôt que de pousser directement dans le repo.
-- N'utilise `git push --force` qu'en connaissance de cause (impacte les autres contributeurs).
-
 
 ## Contact
 
