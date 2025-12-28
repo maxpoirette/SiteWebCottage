@@ -48,17 +48,51 @@
     return true;
   }
 
+  // Convert relative _next values (e.g. "/locales/merci_fr.html") into absolute URLs
+  // based on the current origin + inferred site base so FormSubmit redirects back
+  // to the correct domain (works both on GitHub Pages and on a custom domain).
+  function absolutizeNexts(){
+    function siteBase(){
+      var p = location.pathname || '/';
+      var idx = p.indexOf('/locales/');
+      if(idx !== -1){
+        return location.origin + p.slice(0, idx) + '/';
+      }
+      // if path ends with a filename, strip it
+      if(/\.html$/.test(p)){
+        return location.origin + p.substring(0, p.lastIndexOf('/') + 1);
+      }
+      return location.origin + (p.endsWith('/') ? p : p + '/');
+    }
+
+    var base = siteBase();
+    var forms = document.querySelectorAll('form[data-dynamic-form]');
+    forms.forEach(function(f){
+      try{
+        var inp = f.querySelector('input[name="_next"]');
+        if(inp && inp.value && inp.value.charAt(0) === '/'){
+          // remove leading slashes from input value before joining
+          var rel = inp.value.replace(/^\/+/, '');
+          inp.value = base + rel;
+        }
+      }catch(e){}
+    });
+  }
+
   fetch(cfgUrl).then(function(r){
     if(!r.ok) throw new Error('site-vars.json fetch failed: '+r.status);
     return r.json();
   }).then(function(cfg){
     var email = cfg && cfg.contact_email;
     if(email) applyEmailToForms(email);
+    // once email applied, ensure _next values are absolute so FormSubmit redirects back
+    try{ absolutizeNexts(); }catch(e){}
   }).catch(function(){
     // fallback: try global variable if present (kept for backwards-compatibility)
     try{
       var g = window.__SITE_VARS_GLOBAL__;
       if(g && g.contact_email) applyEmailToForms(g.contact_email);
+      try{ absolutizeNexts(); }catch(e){}
     }catch(e){}
   });
 })();
