@@ -110,7 +110,7 @@
 <section id="contact">
     <h2>Kontakt</h2>
     <div class="contact-form">
-        <form method="POST" action="https://formsubmit.co/{{CONTACT_EMAIL}}">
+        <form method="POST" action="#" data-dynamic-form>
             <input type="hidden" name="_next" value="/locales/merci_de.html">
             <input type="hidden" name="_captcha" value="false">
             <input type="hidden" name="_subject" value="Neue Nachricht von der Webseite">
@@ -135,6 +135,8 @@
         <a href="#" class="airbnb-link">{{AIRBNB_TEXT}}</a>
     </div>
 </section>
+
+<script src="/locales/contact-init.js"></script>
 
 <footer>
     <p>&copy; {{YEAR}} Ferienvermietung Parentis-en-Born, Landes</p>
