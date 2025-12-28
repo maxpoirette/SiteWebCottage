@@ -8,6 +8,8 @@
     </ul>
 </nav>
 
+<link rel="stylesheet" href="/assets/styles/cards.css">
+
 <div id="bienvenue" class="hero" style="background: linear-gradient(rgba(133, 183, 155, 0.7), rgba(30,87,56,0.7)), url('{{IMG_BANNIERE}}'); background-size: cover; background-position: center;">
     <div class="hero-content">
         <h1>Willkommen in Parentis-en-Born</h1>
@@ -44,34 +46,30 @@
     <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
         Eine moderne und sichere Residenz mit allen Annehmlichkeiten für Ihren Komfort.
     </p>
-    <div class="features">
-        <div class="feature-item">
-            <div class="feature-icon">🅿️</div>
-            <div>
-                <h3>Privater Parkplatz</h3>
-                <p>Sicherer Parkplatz inklusive</p>
-            </div>
+    <div class="content-grid">
+        <div class="card">
+            <img src="{{IMG_PARKING}}" alt="Privater Parkplatz" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+            <div class="card-icon">🅿️</div>
+            <h3>Privater Parkplatz</h3>
+            <p>Sicherer Parkplatz inklusive</p>
         </div>
-        <div class="feature-item">
-            <div class="feature-icon">🏊</div>
-            <div>
-                <h3>Schwimmbad</h3>
-                <p>Gemeinschaftspool, saisonal zugänglich</p>
-            </div>
+        <div class="card">
+            <img src="{{IMG_PISCINE}}" alt="Schwimmbad" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+            <div class="card-icon">🏊</div>
+            <h3>Schwimmbad</h3>
+            <p>Gemeinschaftspool, saisonal zugänglich</p>
         </div>
-        <div class="feature-item">
-            <div class="feature-icon">🌳</div>
-            <div>
-                <h3>Grüne Anlagen</h3>
-                <p>Gepflegte Gärten und Ruhebereiche</p>
-            </div>
+        <div class="card">
+            <img src="{{IMG_ESPACES}}" alt="Grüne Anlagen" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+            <div class="card-icon">🌳</div>
+            <h3>Grüne Anlagen</h3>
+            <p>Gepflegte Gärten und Ruhebereiche</p>
         </div>
-        <div class="feature-item">
-            <div class="feature-icon">🔒</div>
-            <div>
-                <h3>Sicherheit</h3>
-                <p>Abgeschlossene Residenz mit Zugangscode</p>
-            </div>
+        <div class="card">
+            <img src="{{IMG_SECURITE}}" alt="Sicherheit" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+            <div class="card-icon">🔒</div>
+            <h3>Sicherheit</h3>
+            <p>Abgeschlossene Residenz mit Zugangscode</p>
         </div>
     </div>
 </section>
