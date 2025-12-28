@@ -26,6 +26,53 @@
     imgAlt: 'Les Cottages du Lac'
   };
 
+  // load merci_{lang}.json and apply to `loc` (returns a Promise)
+  function loadMerciForLang(lang){
+    return new Promise(function(resolve){
+      try{
+        var merciUrl = new URL('merci_' + (lang||'fr') + '.json', base).href;
+        fetch(merciUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('merci json not found'); }).then(function(m){
+          loc.title = m.title || loc.title;
+          loc.message = m.message || loc.message;
+          loc.close = m.close || loc.close;
+          loc.imgAlt = m.imgAlt || loc.imgAlt;
+          updateModalContent();
+          resolve();
+        }).catch(function(){
+          // fallback to site-vars.json thanks if present
+          try{
+            if(__contact_cfg_cache && __contact_cfg_cache.thanks){
+              var entry = __contact_cfg_cache.thanks[lang] || __contact_cfg_cache.thanks[lang && lang.toLowerCase()];
+              if(entry){
+                loc.title = entry.title || loc.title;
+                loc.message = entry.message || loc.message;
+                loc.close = entry.close || loc.close;
+                loc.imgAlt = entry.imgAlt || loc.imgAlt;
+              }
+            }
+          }catch(e){}
+          updateModalContent();
+          resolve();
+        });
+      }catch(e){ updateModalContent(); resolve(); }
+    });
+  }
+
+  // update modal DOM if it exists (title/message/button/img alt)
+  function updateModalContent(){
+    try{
+      var modal = document.getElementById('contact-thanks-modal');
+      if(!modal) return;
+      var box = modal.querySelector('.box');
+      if(!box) return;
+      var img = box.querySelector('.thumb');
+      if(img) try{ img.alt = loc.imgAlt || img.alt; }catch(e){}
+      var h2 = box.querySelector('h2'); if(h2) try{ h2.textContent = loc.title || h2.textContent; }catch(e){}
+      var p = box.querySelector('p'); if(p) try{ p.textContent = loc.message || p.textContent; }catch(e){}
+      var btn = box.querySelector('button.close'); if(btn) try{ btn.textContent = loc.close || btn.textContent; }catch(e){}
+    }catch(e){}
+  }
+
   // attach guard to prevent submit before injection
   // helper to submit a form into an iframe (used by hijack and by retry logic)
   function submitFormToIframe(f){
@@ -262,29 +309,7 @@
     // Try loading a per-language merci JSON (locales/merci_{lang}.json). Fallback to cfg.thanks if not present.
     try{
       var lang = pageLang || 'fr';
-      var merciUrl = new URL('merci_' + lang + '.json', base).href;
-      fetch(merciUrl).then(function(r){
-        if(r.ok) return r.json();
-        throw new Error('merci json not found');
-      }).then(function(m){
-        loc.title = m.title || loc.title;
-        loc.message = m.message || loc.message;
-        loc.close = m.close || loc.close;
-        loc.imgAlt = m.imgAlt || loc.imgAlt;
-      }).catch(function(){
-        // fallback to site-vars.json thanks section if present
-        try{
-          if(cfg && cfg.thanks){
-            var entry = cfg.thanks[lang] || cfg.thanks[lang.toLowerCase()] || null;
-            if(entry){
-              loc.title = entry.title || loc.title;
-              loc.message = entry.message || loc.message;
-              loc.close = entry.close || loc.close;
-              loc.imgAlt = entry.imgAlt || loc.imgAlt;
-            }
-          }
-        }catch(e){}
-      });
+      loadMerciForLang(lang);
     }catch(e){}
     if(email) applyEmailToForms(email);
     // once email applied, ensure _next values are absolute so FormSubmit redirects back
@@ -317,18 +342,23 @@
         });
       if(found){
         try{
+          // detect current page language (may have changed via selector)
+          var newLang = detectPageLang() || 'fr';
+          loadMerciForLang(newLang).finally(function(){
             // ensure email action is applied first (use cache if available, otherwise fetch)
-            if(__contact_cfg_cache && __contact_cfg_cache.contact_email){
-              applyEmailToForms(__contact_cfg_cache.contact_email);
-            }else{
-              // fetch quickly and apply
-              try{ fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){}); }catch(e){}
-            }
-          }catch(e){}
-          try{ guardForms(); }catch(e){}
-          try{ absolutizeNexts(); }catch(e){}
-          try{ attachHiddenIframeSubmit(); }catch(e){}
-        }
+            try{
+              if(__contact_cfg_cache && __contact_cfg_cache.contact_email){
+                applyEmailToForms(__contact_cfg_cache.contact_email);
+              }else{
+                try{ fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){}); }catch(e){}
+              }
+            }catch(e){}
+            try{ guardForms(); }catch(e){}
+            try{ absolutizeNexts(); }catch(e){}
+            try{ attachHiddenIframeSubmit(); }catch(e){}
+          });
+        }catch(e){}
+      }
       });
       obs.observe(document.documentElement || document.body, { childList: true, subtree: true });
     }catch(e){}
