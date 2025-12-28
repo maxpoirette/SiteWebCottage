@@ -199,7 +199,18 @@
     var email = cfg && cfg.contact_email;
     __contact_cfg_cache = cfg;
     // detect language from <html lang> or fallback to 'fr'
-    var pageLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : null;
+      function detectPageLang(){
+        try{
+          if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
+          // try visible .lang-content[data-lang]
+          var nodes = document.querySelectorAll('.lang-content[data-lang]');
+          for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
+          // fallback: look for html fragments with data-lang
+          var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
+        }catch(e){}
+        return null;
+      }
+      var pageLang = detectPageLang() || null;
     // Try loading a per-language merci JSON (locales/merci_{lang}.json). Fallback to cfg.thanks if not present.
     try{
       var lang = pageLang || 'fr';
