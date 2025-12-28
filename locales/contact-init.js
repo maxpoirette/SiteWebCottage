@@ -154,9 +154,27 @@
         if(f.dataset.contactInjected === 'true') return; // already prepared
         // prevent native submit and attempt injection+iframe submit
         ev.preventDefault();
+        try{ ev.stopImmediatePropagation(); }catch(e){}
         tryInjectAndSubmitForForm(f);
       }catch(e){}
     }, true);
+  }catch(e){}
+
+  // Intercept programmatic .submit() calls on forms so they also go through our injection
+  try{
+    var __origFormSubmit = HTMLFormElement.prototype.submit;
+    HTMLFormElement.prototype.submit = function(){
+      try{
+        if(this && this.hasAttribute && this.hasAttribute('data-dynamic-form')){
+          if(this.dataset && this.dataset.contactInjected === 'true'){
+            return __origFormSubmit.apply(this, arguments);
+          }
+          tryInjectAndSubmitForForm(this);
+          return;
+        }
+      }catch(e){}
+      return __origFormSubmit.apply(this, arguments);
+    };
   }catch(e){}
 
   // Try to fetch config, with fallbacks and verbose logging to ease debugging on GH Pages
