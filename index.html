@@ -310,7 +310,7 @@
                     // inject contact-init.js so dynamic form actions are set
                     if (!document.querySelector('script[data-contact-init]')){
                         const s = document.createElement('script');
-                        s.src = '/locales/contact-init.js';
+                        s.src = 'locales/contact-init.js';
                         s.dataset.contactInit = '1';
                         document.body.appendChild(s);
                     }
