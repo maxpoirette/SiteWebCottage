@@ -1,6 +1,28 @@
 // Load contact email from site-vars.json and inject into forms with data-dynamic-form
 (function(){
-  const cfgPath = '/locales/site-vars.json';
+  // Determine base path for this script to locate site-vars.json reliably
+  function scriptBasePath(){
+    // first try document.currentScript
+    var s = document.currentScript;
+    if(!s){
+      // fallback: find script element that looks like contact-init.js
+      var scripts = document.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        var src = scripts[i].src || '';
+        if(src.indexOf('contact-init.js') !== -1){ s = scripts[i]; break; }
+      }
+    }
+    if(s && s.src){
+      return s.src.replace(/\/[^\/]*$/, '');
+    }
+    // final fallback: assume `locales` is next to current path
+    var p = location.pathname;
+    if(p.indexOf('/locales/') !== -1){
+      return p.substring(0, p.indexOf('/locales/') + '/locales'.length);
+    }
+    return (p.endsWith('/') ? p + 'locales' : p + '/locales');
+  }
+  var cfgPath = scriptBasePath() + '/site-vars.json';
   // Attach submit-guard to forms to avoid accidental POST to the site (405 on GH Pages)
   const guardForms = () => {
     const forms = document.querySelectorAll('form[data-dynamic-form]');
