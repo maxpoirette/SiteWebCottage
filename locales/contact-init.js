@@ -119,6 +119,8 @@
           fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; try{ absolutizeNexts(); }catch(e){} try{ attachHiddenIframeSubmit(); }catch(e){} }).catch(function(){});
         }
       }catch(e){}
+      // Try immediate submission if injection already applied synchronously
+      try{ if(f.dataset.contactInjected === 'true'){ if(submitFormToIframe(f)) return; } }catch(e){}
       setTimeout(function(){
         if(f.dataset.contactInjected === 'true'){
           if(submitFormToIframe(f)) return;
@@ -228,9 +230,10 @@
             try{
               var m = (inp.value || '').match(/merci[_-]?([a-z]{2})/i);
               if(m && m[1]){
-                var lang = m[1].toLowerCase();
-                // prefer the localized page under /locales/
-                resolved = new URL('locales/' + lang + '.html', base).href;
+                // Map any legacy merci_xx.html to a single minimal, script-free thank-you page
+                // to avoid loading full locale pages inside the sandboxed iframe (which
+                // causes blocked-script console noise). The modal handles localized text.
+                resolved = new URL('locales/merci.html', base).href;
               }
             }catch(e){}
             inp.value = resolved;
