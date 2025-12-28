@@ -90,7 +90,21 @@
     modal.style.display = 'none';
     modal.innerHTML = '<div class="box"><h2>Merci !</h2><p>Votre message a bien été envoyé — nous vous répondrons bientôt.</p><button class="close">Fermer</button></div>';
     document.body.appendChild(modal);
-    modal.querySelector('.close').addEventListener('click', function(){ modal.style.display='none'; });
+    modal.querySelector('.close').addEventListener('click', function(){
+      modal.style.display='none';
+      try{
+        // reset all dynamic contact forms
+        var forms = document.querySelectorAll('form[data-dynamic-form]');
+        forms.forEach(function(f){
+          try{ f.reset(); }catch(e){}
+        });
+        // focus first input of first form if present
+        if(forms.length){
+          var first = forms[0].querySelector('input,textarea,select');
+          if(first) try{ first.focus(); }catch(e){}
+        }
+      }catch(e){}
+    });
   }
 
   // Submit forms into a hidden iframe so the main page doesn't navigate,
