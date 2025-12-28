@@ -97,10 +97,26 @@
     var modal = document.createElement('div');
     modal.id = 'contact-thanks-modal';
     modal.style.display = 'none';
-    // compute image URL relative to this script base so it works on GH Pages project sites
-    var imgSrc;
-    try{ imgSrc = new URL('../photos/les-cottages-du-lac.jpg', base).href; }catch(e){ imgSrc = '/photos/les-cottages-du-lac.jpg'; }
-    modal.innerHTML = '<div class="box"><img class="thumb" src="'+imgSrc+'" alt="'+(loc.imgAlt||'')+'"><h2>'+(loc.title||'')+'</h2><p>'+(loc.message||'')+'</p><button class="close">'+(loc.close||'')+'</button></div>';
+    // compute image URL candidates relative to this script base so it works on GH Pages project sites
+    var imgCandidates = [];
+    try{
+      imgCandidates.push(new URL('../photos/vue-lac.jpg', base).href);
+      imgCandidates.push(new URL('../photos/parentis-en-born-landes.jpeg', base).href);
+      imgCandidates.push(new URL('../photos/Banniere.png', base).href);
+    }catch(e){
+      imgCandidates.push('/photos/vue-lac.jpg','/photos/parentis-en-born-landes.jpeg','/photos/Banniere.png');
+    }
+    modal.innerHTML = '<div class="box"><img class="thumb" src="'+imgCandidates[0]+'" alt="'+(loc.imgAlt||'')+'"><h2>'+(loc.title||'')+'</h2><p>'+(loc.message||'')+'</p><button class="close">'+(loc.close||'')+'</button></div>';
+    // try fallbacks when image fails to load
+    (function(){
+      var img = modal.querySelector('.thumb');
+      if(!img) return;
+      var idx = 0;
+      img.addEventListener('error', function(){
+        idx++;
+        if(idx < imgCandidates.length) img.src = imgCandidates[idx];
+      });
+    })();
     document.body.appendChild(modal);
     modal.querySelector('.close').addEventListener('click', function(){
       modal.style.display='none';
@@ -241,12 +257,18 @@
           });
         });
         if(found){
+          try{
+            // ensure email action is applied first (use cache if available, otherwise fetch)
+            if(__contact_cfg_cache && __contact_cfg_cache.contact_email){
+              applyEmailToForms(__contact_cfg_cache.contact_email);
+            }else{
+              // fetch quickly and apply
+              try{ fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){}); }catch(e){}
+            }
+          }catch(e){}
           try{ guardForms(); }catch(e){}
           try{ absolutizeNexts(); }catch(e){}
           try{ attachHiddenIframeSubmit(); }catch(e){}
-          try{
-            if(__contact_cfg_cache && __contact_cfg_cache.contact_email) applyEmailToForms(__contact_cfg_cache.contact_email);
-          }catch(e){}
         }
       });
       obs.observe(document.documentElement || document.body, { childList: true, subtree: true });
