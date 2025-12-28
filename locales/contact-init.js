@@ -87,7 +87,20 @@
         ifr.setAttribute('sandbox', 'allow-forms');
         ifr.src = 'about:blank';
         document.body.appendChild(ifr);
-        ifr.addEventListener('load', function(){ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; });
+        ifr.addEventListener('load', function(){
+          try{
+            var modal = document.getElementById('contact-thanks-modal');
+            // detect current language (lightweight copy of detectPageLang)
+            var curLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : (function(){
+              var nodes = document.querySelectorAll('.lang-content[data-lang]');
+              for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
+              var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
+              return 'fr';
+            })();
+            // ensure merci strings are loaded for current lang before showing modal
+            try{ loadMerciForLang(curLang).then(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }).catch(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }); }catch(e){ if(modal) modal.style.display = 'flex'; }
+          }catch(e){ try{ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; }catch(e){} }
+        });
       }
       // build a temporary form to submit to the iframe
       var tmp = document.createElement('form');
@@ -316,8 +329,16 @@
           document.body.appendChild(ifr);
           // when iframe loads, show modal
           ifr.addEventListener('load', function(){
-            var modal = document.getElementById('contact-thanks-modal');
-            if(modal) modal.style.display = 'flex';
+            try{
+              var modal = document.getElementById('contact-thanks-modal');
+              var curLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : (function(){
+                var nodes = document.querySelectorAll('.lang-content[data-lang]');
+                for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
+                var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
+                return 'fr';
+              })();
+              try{ loadMerciForLang(curLang).then(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }).catch(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }); }catch(e){ if(modal) modal.style.display = 'flex'; }
+            }catch(e){ try{ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; }catch(e){} }
           });
         }
         f.target = name;
