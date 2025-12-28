@@ -224,15 +224,20 @@
             // Resolve relative paths against the detected site base so FormSubmit redirects
             // back to our domain instead of to formsubmit.co/locales/...
             var resolved = new URL(inp.value, base).href;
-            // If the _next points to an old merci_*.html (which we no longer serve),
-            // map it to the corresponding language page (locales/xx.html) which exists.
-            // Examples: merci_fr.html -> locales/fr.html
+            // If the _next points to an old merci_*.html, map it to our minimal merci.html
             try{
               var m = (inp.value || '').match(/merci[_-]?([a-z]{2})/i);
               if(m && m[1]){
-                // Map any legacy merci_xx.html to a single minimal, script-free thank-you page
-                // to avoid loading full locale pages inside the sandboxed iframe (which
-                // causes blocked-script console noise). The modal handles localized text.
+                resolved = new URL('locales/merci.html', base).href;
+              }
+            }catch(e){}
+            // If somebody configured _next to point at a full locale page (e.g. /locales/de.html)
+            // rewrite it to the minimal thank-you page as well to avoid loading a page with
+            // scripts into our sandboxed iframe (which only allows forms and will log blocked
+            // script execution). This removes console noise while keeping behavior.
+            try{
+              var p = new URL(resolved).pathname || '';
+              if(/\/locales\/.+\.html$/.test(p) && !p.endsWith('/merci.html')){
                 resolved = new URL('locales/merci.html', base).href;
               }
             }catch(e){}
