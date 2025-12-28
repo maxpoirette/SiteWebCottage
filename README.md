@@ -13,7 +13,7 @@ Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le 
 
 ## 🌍 Démo
 
-🔗 **[Voir le site en ligne](http://localhost:8000)**
+🔗 **[Voir le site en ligne](https://maxpoirette.github.io/SiteWebCottage/)**
 
 ## Principaux changements récents
 
