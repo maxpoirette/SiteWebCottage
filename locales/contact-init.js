@@ -16,6 +16,8 @@
     base = location.origin + '/locales/';
   }
   var cfgUrl = new URL('site-vars.json', base).href;
+  // cache for fetched config so later DOM changes can re-use it
+  var __contact_cfg_cache = null;
   // localized strings (defaults in French)
   var loc = {
     title: 'Merci !',
@@ -179,6 +181,7 @@
     return r.json();
   }).then(function(cfg){
     var email = cfg && cfg.contact_email;
+    __contact_cfg_cache = cfg;
     // detect language from <html lang> or fallback to 'fr'
     var pageLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : null;
     // Try loading a per-language merci JSON (locales/merci_{lang}.json). Fallback to cfg.thanks if not present.
@@ -221,4 +224,31 @@
       try{ attachHiddenIframeSubmit(); }catch(e){}
     }catch(e){}
   });
+
+    // Observe DOM changes so the script works when locale HTML is injected
+    // (e.g. via the language selector which replaces page fragments).
+    try{
+      var obs = new MutationObserver(function(muts){
+        var found = false;
+        muts.forEach(function(m){
+          m.addedNodes && Array.prototype.forEach.call(m.addedNodes, function(n){
+            try{
+              if(n.nodeType === 1){
+                if(n.matches && n.matches('form[data-dynamic-form]')) found = true;
+                if(n.querySelector && n.querySelector('form[data-dynamic-form]')) found = true;
+              }
+            }catch(e){}
+          });
+        });
+        if(found){
+          try{ guardForms(); }catch(e){}
+          try{ absolutizeNexts(); }catch(e){}
+          try{ attachHiddenIframeSubmit(); }catch(e){}
+          try{
+            if(__contact_cfg_cache && __contact_cfg_cache.contact_email) applyEmailToForms(__contact_cfg_cache.contact_email);
+          }catch(e){}
+        }
+      });
+      obs.observe(document.documentElement || document.body, { childList: true, subtree: true });
+    }catch(e){}
 })();
