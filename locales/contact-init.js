@@ -83,7 +83,8 @@
         var ifr = document.createElement('iframe');
         ifr.name = name;
         ifr.style.display = 'none';
-        ifr.setAttribute('sandbox', 'allow-forms allow-scripts');
+        // keep sandbox minimal: allow forms but do NOT allow remote scripts
+        ifr.setAttribute('sandbox', 'allow-forms');
         ifr.src = 'about:blank';
         document.body.appendChild(ifr);
         ifr.addEventListener('load', function(){ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; });
@@ -212,10 +213,12 @@
     forms.forEach(function(f){
       try{
         var inp = f.querySelector('input[name="_next"]');
-        if(inp && inp.value && inp.value.charAt(0) === '/'){
-          // remove leading slashes from input value before joining
-          var rel = inp.value.replace(/^\/+/, '');
-          inp.value = base + rel;
+        if(inp && inp.value){
+          try{
+            // Resolve relative paths against the detected site base so FormSubmit redirects
+            // back to our domain instead of to formsubmit.co/locales/...
+            inp.value = new URL(inp.value, base).href;
+          }catch(e){}
         }
       }catch(e){}
     });
@@ -281,8 +284,10 @@
           var ifr = document.createElement('iframe');
           ifr.name = name;
           ifr.style.display = 'none';
-          // sandbox to prevent iframe content from navigating the top window
-          ifr.setAttribute('sandbox', 'allow-forms allow-scripts');
+          // sandbox to prevent iframe content from navigating the top window and to
+          // avoid executing remote scripts inside the iframe (prevents cross-origin
+          // script errors logged to the console).
+          ifr.setAttribute('sandbox', 'allow-forms');
           ifr.src = 'about:blank';
           document.body.appendChild(ifr);
           // when iframe loads, show modal
