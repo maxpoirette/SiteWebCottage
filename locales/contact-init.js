@@ -110,9 +110,13 @@
     function attempt(){
       attempts++;
       try{
-        if(__contact_cfg_cache && __contact_cfg_cache.contact_email){ applyEmailToForms(__contact_cfg_cache.contact_email); }
+        if(__contact_cfg_cache && __contact_cfg_cache.contact_email){
+          applyEmailToForms(__contact_cfg_cache.contact_email);
+          try{ absolutizeNexts(); }catch(e){}
+          try{ attachHiddenIframeSubmit(); }catch(e){}
+        }
         else {
-          fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){});
+          fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; try{ absolutizeNexts(); }catch(e){} try{ attachHiddenIframeSubmit(); }catch(e){} }).catch(function(){});
         }
       }catch(e){}
       setTimeout(function(){
