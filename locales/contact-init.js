@@ -126,12 +126,14 @@
     if(email) applyEmailToForms(email);
     // once email applied, ensure _next values are absolute so FormSubmit redirects back
     try{ absolutizeNexts(); }catch(e){}
+    try{ attachHiddenIframeSubmit(); }catch(e){}
   }).catch(function(){
     // fallback: try global variable if present (kept for backwards-compatibility)
     try{
       var g = window.__SITE_VARS_GLOBAL__;
       if(g && g.contact_email) applyEmailToForms(g.contact_email);
       try{ absolutizeNexts(); }catch(e){}
+      try{ attachHiddenIframeSubmit(); }catch(e){}
     }catch(e){}
   });
 })();
