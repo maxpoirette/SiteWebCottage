@@ -26,6 +26,19 @@
     imgAlt: 'Les Cottages du Lac'
   };
 
+  // detect current page language in a robust way (checks localStorage, selector, html lang, visible fragments)
+  function detectPageLang(){
+    try{
+      try{ var ls = localStorage.getItem('site-lang'); if(ls) return (ls||'').substring(0,2); }catch(e){}
+      try{ var sel = document.getElementById('languageSelect'); if(sel && sel.value) return (sel.value||'').substring(0,2); }catch(e){}
+      if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
+      var nodes = document.querySelectorAll('.lang-content[data-lang]');
+      for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
+      var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
+    }catch(e){}
+    return 'fr';
+  }
+
   // load merci_{lang}.json and apply to `loc` (returns a Promise)
   function loadMerciForLang(lang){
     return new Promise(function(resolve){
@@ -90,14 +103,7 @@
         ifr.addEventListener('load', function(){
           try{
             var modal = document.getElementById('contact-thanks-modal');
-            // detect current language (lightweight copy of detectPageLang)
-            var curLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : (function(){
-              var nodes = document.querySelectorAll('.lang-content[data-lang]');
-              for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
-              var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
-              return 'fr';
-            })();
-            // ensure merci strings are loaded for current lang before showing modal
+            var curLang = detectPageLang() || 'fr';
             try{ loadMerciForLang(curLang).then(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }).catch(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }); }catch(e){ if(modal) modal.style.display = 'flex'; }
           }catch(e){ try{ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; }catch(e){} }
         });
@@ -331,12 +337,7 @@
           ifr.addEventListener('load', function(){
             try{
               var modal = document.getElementById('contact-thanks-modal');
-              var curLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : (function(){
-                var nodes = document.querySelectorAll('.lang-content[data-lang]');
-                for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
-                var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
-                return 'fr';
-              })();
+              var curLang = detectPageLang() || 'fr';
               try{ loadMerciForLang(curLang).then(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }).catch(function(){ try{ updateModalContent(); if(modal) modal.style.display = 'flex'; }catch(e){} }); }catch(e){ if(modal) modal.style.display = 'flex'; }
             }catch(e){ try{ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; }catch(e){} }
           });
@@ -381,19 +382,7 @@
   }).then(function(cfg){
     var email = cfg && cfg.contact_email;
     __contact_cfg_cache = cfg;
-    // detect language from <html lang> or fallback to 'fr'
-      function detectPageLang(){
-        try{
-          if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
-          // try visible .lang-content[data-lang]
-          var nodes = document.querySelectorAll('.lang-content[data-lang]');
-          for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
-          // fallback: look for html fragments with data-lang
-          var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
-        }catch(e){}
-        return null;
-      }
-      var pageLang = detectPageLang() || null;
+    var pageLang = detectPageLang() || null;
     // Try loading a per-language merci JSON (locales/merci_{lang}.json). Fallback to cfg.thanks if not present.
     try{
       var lang = pageLang || 'fr';
