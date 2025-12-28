@@ -100,7 +100,6 @@
       try{
         f.action = 'https://formsubmit.co/' + encodeURIComponent(email);
         f.dataset.contactInjected = 'true';
-        try{ console.info('contact-init: applied action to form', f, f.action); }catch(e){}
       }catch(e){}
     });
     return true;
@@ -212,8 +211,7 @@
         if(!f.__contactSubmitHijacked){
           f.__contactSubmitHijacked = true;
           f.addEventListener('submit', function(ev){
-            try{ console.info('contact-init: submit handler triggered (hijacked) for form', f); }catch(e){}
-            try{
+              try{
               ev.preventDefault();
               // build a temporary form to submit to the iframe (helps avoid navigation)
               var tmp = document.createElement('form');
@@ -317,9 +315,8 @@
             }catch(e){}
           });
         });
-        if(found){
-          try{ console.info('contact-init: DOM injection detected — reapplying contact handlers'); }catch(e){}
-          try{
+      if(found){
+        try{
             // ensure email action is applied first (use cache if available, otherwise fetch)
             if(__contact_cfg_cache && __contact_cfg_cache.contact_email){
               applyEmailToForms(__contact_cfg_cache.contact_email);
