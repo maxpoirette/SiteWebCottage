@@ -103,6 +103,30 @@
     }catch(e){return false;}
   }
 
+  // Try to inject email action and submit the form into the iframe with retries.
+  function tryInjectAndSubmitForForm(f){
+    var attempts = 0;
+    function attempt(){
+      attempts++;
+      try{
+        if(__contact_cfg_cache && __contact_cfg_cache.contact_email){ applyEmailToForms(__contact_cfg_cache.contact_email); }
+        else {
+          fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){});
+        }
+      }catch(e){}
+      setTimeout(function(){
+        if(f.dataset.contactInjected === 'true'){
+          if(submitFormToIframe(f)) return;
+        }
+        if(attempts < 8) attempt();
+        else {
+          try{ alert('Le formulaire n\'est pas prêt. Veuillez patienter quelques instants puis r\u00e9essayer.'); }catch(e){}
+        }
+      }, 200);
+    }
+    attempt();
+  }
+
   function guardForms(){
     var forms = document.querySelectorAll('form[data-dynamic-form]');
     forms.forEach(function(f){
@@ -112,32 +136,28 @@
       f.addEventListener('submit', function(ev){
         if(f.dataset.contactInjected === 'true') return; // already injected, allow normal flow (hijack will handle)
         ev.preventDefault();
-        // try to (re)apply email action quickly, using cache or fetching config
-        var attempts = 0;
-        function tryInjectAndSubmit(){
-          attempts++;
-          try{
-            if(__contact_cfg_cache && __contact_cfg_cache.contact_email){ applyEmailToForms(__contact_cfg_cache.contact_email); }
-            else {
-              fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){});
-            }
-          }catch(e){}
-          // wait briefly for injection
-          setTimeout(function(){
-            if(f.dataset.contactInjected === 'true'){
-              // submit directly into iframe to avoid re-triggering guard
-              if(submitFormToIframe(f)) return;
-            }
-            if(attempts < 8){ tryInjectAndSubmit(); }
-            else { alert('Le formulaire n\'est pas prêt. Veuillez patienter quelques instants puis réessayer.'); }
-          }, 250);
-        }
-        tryInjectAndSubmit();
+        tryInjectAndSubmitForForm(f);
       });
     });
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', guardForms); else guardForms();
+
+  // Global capturing submit handler: this intercepts submits even on newly injected forms
+  // and ensures we attempt injection before the browser performs a normal POST.
+  try{
+    document.addEventListener('submit', function(ev){
+      try{
+        var f = ev.target;
+        if(!f || f.nodeName !== 'FORM') return;
+        if(!f.hasAttribute('data-dynamic-form')) return;
+        if(f.dataset.contactInjected === 'true') return; // already prepared
+        // prevent native submit and attempt injection+iframe submit
+        ev.preventDefault();
+        tryInjectAndSubmitForForm(f);
+      }catch(e){}
+    }, true);
+  }catch(e){}
 
   // Try to fetch config, with fallbacks and verbose logging to ease debugging on GH Pages
   function applyEmailToForms(email){
