@@ -107,23 +107,26 @@
 
 <section id="contact">
   <h2>Contacto</h2>
-  <div class="contact-form">
-    <form>
+    <div class="contact-form">
+    <form method="POST" action="https://formsubmit.co/{{CONTACT_EMAIL}}">
+      <input type="hidden" name="_next" value="/locales/merci_es.html">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_subject" value="Nuevo mensaje desde el sitio">
       <div class="form-group">
         <label>Nombre</label>
-        <input type="text" required>
+        <input type="text" name="name" required>
       </div>
       <div class="form-group">
         <label>Correo</label>
-        <input type="email" required>
+        <input type="email" name="email" required>
       </div>
       <div class="form-group">
         <label>Teléfono</label>
-        <input type="tel">
+        <input type="tel" name="phone">
       </div>
       <div class="form-group">
         <label>Mensaje</label>
-        <textarea required></textarea>
+        <textarea name="message" required></textarea>
       </div>
       <button type="submit" class="btn">Enviar</button>
     </form>
