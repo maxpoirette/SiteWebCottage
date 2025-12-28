@@ -3,6 +3,7 @@
   // Resolve absolute URL to site-vars.json based on the executing script
   var cfgPath = null;
   (function resolveCfgPath(){
+    var candidates = [];
     var s = document.currentScript;
     if(!s){
       var scripts = document.getElementsByTagName('script');
@@ -11,22 +12,27 @@
         if(src.indexOf('contact-init.js') !== -1){ s = scripts[i]; break; }
       }
     }
-    if(s && s.src){
-      try{
-        cfgPath = new URL('site-vars.json', s.src).href;
-        return;
-      }catch(e){ /* fall through to other heuristics */ }
-    }
-    // fallback: construct from location (assume '/SiteWebCottage/locales/site-vars.json' or similar)
-    var p = location.pathname || '/';
-    // if path already contains /locales/ use that
-    var idx = p.indexOf('/locales/');
-    if(idx !== -1){
-      cfgPath = location.origin + p.substring(0, idx+('/locales'.length)) + '/site-vars.json';
-      return;
-    }
-    // default: assume locales is next to root of repo
-    cfgPath = location.origin + (p.endsWith('/') ? p + 'locales/site-vars.json' : p + '/locales/site-vars.json');
+    try{
+      if(s && s.src) candidates.push(new URL('site-vars.json', s.src).href);
+    }catch(e){/* ignore */}
+
+    // page-relative locales folder
+    try{ candidates.push(new URL('./locales/site-vars.json', location.href).href); }catch(e){}
+
+    // repo prefixed (first path segment), useful for GH Pages project sites
+    try{
+      var segs = location.pathname.split('/').filter(Boolean);
+      if(segs.length>0){
+        candidates.push(location.origin + '/' + segs[0] + '/locales/site-vars.json');
+      }
+    }catch(e){}
+
+    // site root locales
+    try{ candidates.push(location.origin + '/locales/site-vars.json'); }catch(e){}
+
+    // remove duplicates
+    candidates = candidates.filter(function(v,i){ return v && candidates.indexOf(v)===i; });
+    cfgPath = candidates; // array to try sequentially
   })();
   // Attach submit-guard to forms to avoid accidental POST to the site (405 on GH Pages)
   const guardForms = () => {
@@ -52,10 +58,17 @@
     guardForms();
   }
 
-  fetch(cfgPath).then(r=>{
-    if (!r.ok) throw new Error('site-vars.json fetch failed: '+r.status);
-    return r.json();
-  }).then(cfg=>{
+  // try candidates sequentially until one succeeds
+  (function tryFetchList(list){
+    if(!list || !list.length) return Promise.reject(new Error('no cfgPath candidates'));
+    var url = list.shift();
+    return fetch(url).then(r=>{
+      if(!r.ok) return tryFetchList(list);
+      return r.json().then(cfg=>({cfg:cfg,url:url}));
+    }).catch(()=> tryFetchList(list));
+  })(Array.isArray(cfgPath)? cfgPath.slice() : [cfgPath]).then(result=>{
+    var cfg = result.cfg;
+    // success
     const email = cfg.contact_email;
     if (!email) return;
     const forms = document.querySelectorAll('form[data-dynamic-form]');
