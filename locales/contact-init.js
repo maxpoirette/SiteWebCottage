@@ -181,18 +181,32 @@
     var email = cfg && cfg.contact_email;
     // detect language from <html lang> or fallback to 'fr'
     var pageLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : null;
-    // apply localized strings if provided in site-vars.json under `thanks` key
+    // Try loading a per-language merci JSON (locales/merci_{lang}.json). Fallback to cfg.thanks if not present.
     try{
-      if(cfg && cfg.thanks){
-        var lang = pageLang || 'fr';
-        var entry = cfg.thanks[lang] || cfg.thanks[pageLang && pageLang.toLowerCase()] || null;
-        if(entry){
-          loc.title = entry.title || loc.title;
-          loc.message = entry.message || loc.message;
-          loc.close = entry.close || loc.close;
-          loc.imgAlt = entry.imgAlt || loc.imgAlt;
-        }
-      }
+      var lang = pageLang || 'fr';
+      var merciUrl = new URL('merci_' + lang + '.json', base).href;
+      fetch(merciUrl).then(function(r){
+        if(r.ok) return r.json();
+        throw new Error('merci json not found');
+      }).then(function(m){
+        loc.title = m.title || loc.title;
+        loc.message = m.message || loc.message;
+        loc.close = m.close || loc.close;
+        loc.imgAlt = m.imgAlt || loc.imgAlt;
+      }).catch(function(){
+        // fallback to site-vars.json thanks section if present
+        try{
+          if(cfg && cfg.thanks){
+            var entry = cfg.thanks[lang] || cfg.thanks[lang.toLowerCase()] || null;
+            if(entry){
+              loc.title = entry.title || loc.title;
+              loc.message = entry.message || loc.message;
+              loc.close = entry.close || loc.close;
+              loc.imgAlt = entry.imgAlt || loc.imgAlt;
+            }
+          }
+        }catch(e){}
+      });
     }catch(e){}
     if(email) applyEmailToForms(email);
     // once email applied, ensure _next values are absolute so FormSubmit redirects back
