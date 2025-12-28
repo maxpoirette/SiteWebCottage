@@ -79,6 +79,45 @@
     });
   }
 
+  // Create a simple modal to show a thank-you popup
+  function ensureThankYouModal(){
+    if(document.getElementById('contact-thanks-modal')) return;
+    var css = document.createElement('style');
+    css.textContent = '\n#contact-thanks-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:9999}\n#contact-thanks-modal .box{background:#fff;padding:1.5rem;border-radius:8px;max-width:480px;width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}\n#contact-thanks-modal .close{margin-top:1rem;background:#2d7a4f;color:#fff;border:none;padding:0.6rem 1rem;border-radius:6px;cursor:pointer}\n';
+    document.head.appendChild(css);
+    var modal = document.createElement('div');
+    modal.id = 'contact-thanks-modal';
+    modal.style.display = 'none';
+    modal.innerHTML = '<div class="box"><h2>Merci !</h2><p>Votre message a bien été envoyé — nous vous répondrons bientôt.</p><button class="close">Fermer</button></div>';
+    document.body.appendChild(modal);
+    modal.querySelector('.close').addEventListener('click', function(){ modal.style.display='none'; });
+  }
+
+  // Submit forms into a hidden iframe so the main page doesn't navigate,
+  // then show the modal when the iframe loads the FormSubmit response.
+  function attachHiddenIframeSubmit(){
+    ensureThankYouModal();
+    var forms = document.querySelectorAll('form[data-dynamic-form]');
+    forms.forEach(function(f, idx){
+      try{
+        var name = 'contact_iframe_' + idx;
+        // create iframe if not exists
+        if(!document.querySelector('iframe[name="'+name+'"]')){
+          var ifr = document.createElement('iframe');
+          ifr.name = name;
+          ifr.style.display = 'none';
+          document.body.appendChild(ifr);
+          // when iframe loads, show modal
+          ifr.addEventListener('load', function(){
+            var modal = document.getElementById('contact-thanks-modal');
+            if(modal) modal.style.display = 'flex';
+          });
+        }
+        f.target = name;
+      }catch(e){}
+    });
+  }
+
   fetch(cfgUrl).then(function(r){
     if(!r.ok) throw new Error('site-vars.json fetch failed: '+r.status);
     return r.json();
