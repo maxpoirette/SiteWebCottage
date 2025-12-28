@@ -307,10 +307,18 @@
 
           root.innerHTML = html;
 
-          if(location.hash){
-            const t = root.querySelector(location.hash);
-            if(t) t.scrollIntoView({behavior:'smooth'});
-          }
+                    // inject contact-init.js so dynamic form actions are set
+                    if (!document.querySelector('script[data-contact-init]')){
+                        const s = document.createElement('script');
+                        s.src = '/locales/contact-init.js';
+                        s.dataset.contactInit = '1';
+                        document.body.appendChild(s);
+                    }
+
+                    if(location.hash){
+                        const t = root.querySelector(location.hash);
+                        if(t) t.scrollIntoView({behavior:'smooth'});
+                    }
         }catch(err){
           console.error('Erreur chargement locale', lang, err);
           root.innerHTML = '<p>Erreur de chargement — voir la console.</p>';
