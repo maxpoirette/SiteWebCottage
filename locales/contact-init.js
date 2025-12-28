@@ -106,6 +106,9 @@
           var ifr = document.createElement('iframe');
           ifr.name = name;
           ifr.style.display = 'none';
+          // sandbox to prevent iframe content from navigating the top window
+          ifr.setAttribute('sandbox', 'allow-forms allow-scripts');
+          ifr.src = 'about:blank';
           document.body.appendChild(ifr);
           // when iframe loads, show modal
           ifr.addEventListener('load', function(){
