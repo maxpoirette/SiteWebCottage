@@ -221,7 +221,19 @@
           try{
             // Resolve relative paths against the detected site base so FormSubmit redirects
             // back to our domain instead of to formsubmit.co/locales/...
-            inp.value = new URL(inp.value, base).href;
+            var resolved = new URL(inp.value, base).href;
+            // If the _next points to an old merci_*.html (which we no longer serve),
+            // map it to the corresponding language page (locales/xx.html) which exists.
+            // Examples: merci_fr.html -> locales/fr.html
+            try{
+              var m = (inp.value || '').match(/merci[_-]?([a-z]{2})/i);
+              if(m && m[1]){
+                var lang = m[1].toLowerCase();
+                // prefer the localized page under /locales/
+                resolved = new URL('locales/' + lang + '.html', base).href;
+              }
+            }catch(e){}
+            inp.value = resolved;
           }catch(e){}
         }
       }catch(e){}
