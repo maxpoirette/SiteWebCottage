@@ -16,6 +16,13 @@
     base = location.origin + '/locales/';
   }
   var cfgUrl = new URL('site-vars.json', base).href;
+  // localized strings (defaults in French)
+  var loc = {
+    title: 'Merci !',
+    message: 'Votre message a bien été envoyé — nous vous répondrons bientôt.',
+    close: 'Fermer',
+    imgAlt: 'Les Cottages du Lac'
+  };
 
   // attach guard to prevent submit before injection
   function guardForms(){
@@ -91,7 +98,7 @@
     // compute image URL relative to this script base so it works on GH Pages project sites
     var imgSrc;
     try{ imgSrc = new URL('../photos/les-cottages-du-lac.jpg', base).href; }catch(e){ imgSrc = '/photos/les-cottages-du-lac.jpg'; }
-    modal.innerHTML = '<div class="box"><img class="thumb" src="'+imgSrc+'" alt="Les Cottages du Lac"><h2>Merci !</h2><p>Votre message a bien été envoyé — nous vous répondrons bientôt.</p><button class="close">Fermer</button></div>';
+    modal.innerHTML = '<div class="box"><img class="thumb" src="'+imgSrc+'" alt="'+(loc.imgAlt||'')+'"><h2>'+(loc.title||'')+'</h2><p>'+(loc.message||'')+'</p><button class="close">'+(loc.close||'')+'</button></div>';
     document.body.appendChild(modal);
     modal.querySelector('.close').addEventListener('click', function(){
       modal.style.display='none';
@@ -172,6 +179,21 @@
     return r.json();
   }).then(function(cfg){
     var email = cfg && cfg.contact_email;
+    // detect language from <html lang> or fallback to 'fr'
+    var pageLang = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang.substring(0,2) : null;
+    // apply localized strings if provided in site-vars.json under `thanks` key
+    try{
+      if(cfg && cfg.thanks){
+        var lang = pageLang || 'fr';
+        var entry = cfg.thanks[lang] || cfg.thanks[pageLang && pageLang.toLowerCase()] || null;
+        if(entry){
+          loc.title = entry.title || loc.title;
+          loc.message = entry.message || loc.message;
+          loc.close = entry.close || loc.close;
+          loc.imgAlt = entry.imgAlt || loc.imgAlt;
+        }
+      }
+    }catch(e){}
     if(email) applyEmailToForms(email);
     // once email applied, ensure _next values are absolute so FormSubmit redirects back
     try{ absolutizeNexts(); }catch(e){}
