@@ -114,6 +114,35 @@
           });
         }
         f.target = name;
+        // ensure submit uses the iframe: prevent default and submit via a temporary form targeted at iframe
+        if(!f.__contactSubmitHijacked){
+          f.__contactSubmitHijacked = true;
+          f.addEventListener('submit', function(ev){
+            try{
+              ev.preventDefault();
+              // build a temporary form to submit to the iframe (helps avoid navigation)
+              var tmp = document.createElement('form');
+              tmp.style.display = 'none';
+              tmp.method = (f.method || 'POST');
+              tmp.action = f.action;
+              tmp.target = name;
+              // copy inputs
+              var elements = f.querySelectorAll('input,textarea,select');
+              elements.forEach(function(el){
+                if(!el.name) return;
+                var i = document.createElement('input');
+                i.type = 'hidden';
+                i.name = el.name;
+                i.value = el.value || '';
+                tmp.appendChild(i);
+              });
+              document.body.appendChild(tmp);
+              tmp.submit();
+              // remove tmp after short delay
+              setTimeout(function(){ try{ document.body.removeChild(tmp); }catch(e){} }, 2000);
+            }catch(e){}
+          });
+        }
       }catch(e){}
     });
   }
