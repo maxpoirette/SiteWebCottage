@@ -83,12 +83,15 @@
   function ensureThankYouModal(){
     if(document.getElementById('contact-thanks-modal')) return;
     var css = document.createElement('style');
-    css.textContent = '\n#contact-thanks-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:9999}\n#contact-thanks-modal .box{background:#fff;padding:1.5rem;border-radius:8px;max-width:480px;width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}\n#contact-thanks-modal .close{margin-top:1rem;background:#2d7a4f;color:#fff;border:none;padding:0.6rem 1rem;border-radius:6px;cursor:pointer}\n';
+    css.textContent = '\n#contact-thanks-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:9999}\n#contact-thanks-modal .box{background:#fff;padding:1.5rem;border-radius:8px;max-width:480px;width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}\n#contact-thanks-modal .thumb{width:100%;height:180px;object-fit:cover;border-radius:6px;margin-bottom:0.75rem}\n#contact-thanks-modal .close{margin-top:1rem;background:#2d7a4f;color:#fff;border:none;padding:0.6rem 1rem;border-radius:6px;cursor:pointer}\n';
     document.head.appendChild(css);
     var modal = document.createElement('div');
     modal.id = 'contact-thanks-modal';
     modal.style.display = 'none';
-    modal.innerHTML = '<div class="box"><h2>Merci !</h2><p>Votre message a bien été envoyé — nous vous répondrons bientôt.</p><button class="close">Fermer</button></div>';
+    // compute image URL relative to this script base so it works on GH Pages project sites
+    var imgSrc;
+    try{ imgSrc = new URL('../photos/les-cottages-du-lac.jpg', base).href; }catch(e){ imgSrc = '/photos/les-cottages-du-lac.jpg'; }
+    modal.innerHTML = '<div class="box"><img class="thumb" src="'+imgSrc+'" alt="Les Cottages du Lac"><h2>Merci !</h2><p>Votre message a bien été envoyé — nous vous répondrons bientôt.</p><button class="close">Fermer</button></div>';
     document.body.appendChild(modal);
     modal.querySelector('.close').addEventListener('click', function(){
       modal.style.display='none';
