@@ -16,7 +16,6 @@
     base = location.origin + '/locales/';
   }
   var cfgUrl = new URL('site-vars.json', base).href;
-  var repoFallback = (location.origin + '/SiteWebCottage/locales/site-vars.json');
 
   // attach guard to prevent submit before injection
   function guardForms(){
@@ -44,9 +43,8 @@
       try{
         f.action = 'https://formsubmit.co/' + encodeURIComponent(email);
         f.dataset.contactInjected = 'true';
-      }catch(e){ console.error(e); }
+      }catch(e){}
     });
-    console.debug('contact-init: applied email to', forms.length, 'forms');
     return true;
   }
 
@@ -55,29 +53,12 @@
     return r.json();
   }).then(function(cfg){
     var email = cfg && cfg.contact_email;
-    if(email) return applyEmailToForms(email);
-    throw new Error('no contact_email in site-vars.json');
-  }).catch(function(err){
-    console.warn('contact-init: primary fetch failed:', err);
-    // try repo-root fallback
-    fetch(repoFallback, {cache:'no-cache'}).then(function(r){
-      if(!r.ok) throw new Error('repo fallback fetch failed: '+r.status);
-      return r.json();
-    }).then(function(cfg){
-      var email = cfg && cfg.contact_email;
-      if(email) return applyEmailToForms(email);
-      throw new Error('no contact_email in repo fallback');
-    }).catch(function(err2){
-      console.warn('contact-init: repo fallback failed:', err2);
-      // last resort: try global injected variable from index.html
-      try{
-        var g = window.__SITE_VARS_GLOBAL__;
-        if(g && g.contact_email){
-          applyEmailToForms(g.contact_email);
-          return;
-        }
-      }catch(e){}
-      console.warn('contact-init: no contact email available — forms will remain inactive until config is reachable.');
-    });
+    if(email) applyEmailToForms(email);
+  }).catch(function(){
+    // fallback: try global variable if present (kept for backwards-compatibility)
+    try{
+      var g = window.__SITE_VARS_GLOBAL__;
+      if(g && g.contact_email) applyEmailToForms(g.contact_email);
+    }catch(e){}
   });
 })();
