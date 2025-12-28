@@ -27,6 +27,35 @@
   };
 
   // attach guard to prevent submit before injection
+  // helper to submit a form into an iframe (used by hijack and by retry logic)
+  function submitFormToIframe(f){
+    try{
+      var name = f.target || ('contact_iframe_auto');
+      // ensure iframe exists
+      if(!document.querySelector('iframe[name="'+name+'"]')){
+        var ifr = document.createElement('iframe');
+        ifr.name = name;
+        ifr.style.display = 'none';
+        ifr.setAttribute('sandbox', 'allow-forms allow-scripts');
+        ifr.src = 'about:blank';
+        document.body.appendChild(ifr);
+        ifr.addEventListener('load', function(){ var modal = document.getElementById('contact-thanks-modal'); if(modal) modal.style.display = 'flex'; });
+      }
+      // build a temporary form to submit to the iframe
+      var tmp = document.createElement('form');
+      tmp.style.display = 'none';
+      tmp.method = (f.method || 'POST');
+      tmp.action = f.action;
+      tmp.target = name;
+      var elements = f.querySelectorAll('input,textarea,select');
+      elements.forEach(function(el){ if(!el.name) return; var i = document.createElement('input'); i.type='hidden'; i.name = el.name; i.value = el.value || ''; tmp.appendChild(i); });
+      document.body.appendChild(tmp);
+      tmp.submit();
+      setTimeout(function(){ try{ document.body.removeChild(tmp); }catch(e){} }, 2000);
+      return true;
+    }catch(e){return false;}
+  }
+
   function guardForms(){
     var forms = document.querySelectorAll('form[data-dynamic-form]');
     forms.forEach(function(f){
@@ -34,10 +63,29 @@
       f.__contactGuardAttached = true;
       f.dataset.contactInjected = 'false';
       f.addEventListener('submit', function(ev){
-        if(f.dataset.contactInjected !== 'true'){
-          ev.preventDefault();
-          alert('Le formulaire n\'est pas prêt. Veuillez patienter quelques instants puis réessayer.');
+        if(f.dataset.contactInjected === 'true') return; // already injected, allow normal flow (hijack will handle)
+        ev.preventDefault();
+        // try to (re)apply email action quickly, using cache or fetching config
+        var attempts = 0;
+        function tryInjectAndSubmit(){
+          attempts++;
+          try{
+            if(__contact_cfg_cache && __contact_cfg_cache.contact_email){ applyEmailToForms(__contact_cfg_cache.contact_email); }
+            else {
+              fetch(cfgUrl).then(function(r){ if(r.ok) return r.json(); }).then(function(c){ if(c && c.contact_email) applyEmailToForms(c.contact_email); __contact_cfg_cache = c; }).catch(function(){});
+            }
+          }catch(e){}
+          // wait briefly for injection
+          setTimeout(function(){
+            if(f.dataset.contactInjected === 'true'){
+              // submit directly into iframe to avoid re-triggering guard
+              if(submitFormToIframe(f)) return;
+            }
+            if(attempts < 8){ tryInjectAndSubmit(); }
+            else { alert('Le formulaire n\'est pas prêt. Veuillez patienter quelques instants puis réessayer.'); }
+          }, 250);
         }
+        tryInjectAndSubmit();
       });
     });
   }
