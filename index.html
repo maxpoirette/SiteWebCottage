@@ -278,14 +278,16 @@
       const root = document.getElementById('langRoot');
       let siteVars = {};
 
-      async function loadSiteVars(){
-        try{
-          const r = await fetch('./locales/site-vars.json', { cache: 'no-cache' });
-          if(r.ok) siteVars = await r.json();
-        }catch(e){
-          console.warn('site-vars.json not loaded', e);
-        }
-      }
+            async function loadSiteVars(){
+                try{
+                    const r = await fetch('./locales/site-vars.json', { cache: 'no-cache' });
+                    if(r.ok) siteVars = await r.json();
+                }catch(e){
+                    console.warn('site-vars.json not loaded', e);
+                }
+                // expose for fallback when contact-init.js cannot fetch the file (GitHub Pages path quirks)
+                try{ window.__SITE_VARS_GLOBAL__ = siteVars; }catch(e){}
+            }
 
       async function loadLocale(lang){
         try{
