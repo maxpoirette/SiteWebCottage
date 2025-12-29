@@ -13,4 +13,67 @@
   "year": "2025",
   "airbnb_ical": "https://www.airbnb.fr/calendar/ical/43505513.ics?t=c178d7d449ed49b1af3caf831707529b",
   "contact_email": "max.poirette@gmail.com"
+
+  ,"calendar_labels": {
+    "fr": {
+      "loading": "Chargement du calendrier…",
+      "refresh": "Actualiser",
+      "no_reservations": "Aucune réservation affichée.",
+      "reserved_title": "Périodes réservées",
+      "view_listing": "Voir l'annonce Airbnb",
+      "error_fetch": "Impossible de charger le calendrier.",
+      "refreshing": "Actualisation…",
+      "updated": "Actualisé",
+      "refresh_error": "Erreur d'actualisation",
+      "no_ical": "Aucun calendrier configuré."
+    },
+    "en": {
+      "loading": "Loading calendar…",
+      "refresh": "Refresh",
+      "no_reservations": "No reservations to display.",
+      "reserved_title": "Reserved periods",
+      "view_listing": "View listing on Airbnb",
+      "error_fetch": "Unable to load calendar.",
+      "refreshing": "Refreshing…",
+      "updated": "Updated",
+      "refresh_error": "Refresh error",
+      "no_ical": "No calendar configured."
+    },
+    "es": {
+      "loading": "Cargando calendario…",
+      "refresh": "Actualizar",
+      "no_reservations": "No hay reservas para mostrar.",
+      "reserved_title": "Períodos reservados",
+      "view_listing": "Ver anuncio en Airbnb",
+      "error_fetch": "No se puede cargar el calendario.",
+      "refreshing": "Actualizando…",
+      "updated": "Actualizado",
+      "refresh_error": "Error de actualización",
+      "no_ical": "Ningún calendario configurado."
+    },
+    "nl": {
+      "loading": "Kalender laden…",
+      "refresh": "Vernieuwen",
+      "no_reservations": "Geen reserveringen om weer te geven.",
+      "reserved_title": "Gereserveerde periodes",
+      "view_listing": "Bekijk advertentie op Airbnb",
+      "error_fetch": "Kan kalender niet laden.",
+      "refreshing": "Actualiseren…",
+      "updated": "Bijgewerkt",
+      "refresh_error": "Fout bij actualisatie",
+      "no_ical": "Geen kalender geconfigureerd."
+    },
+    "de": {
+      "loading": "Kalender wird geladen…",
+      "refresh": "Aktualisieren",
+      "no_reservations": "Keine Reservierungen vorhanden.",
+      "reserved_title": "Reservierte Zeiträume",
+      "view_listing": "Eintrag auf Airbnb ansehen",
+      "error_fetch": "Kalender konnte nicht geladen werden.",
+      "refreshing": "Aktualisiere…",
+      "updated": "Aktualisiert",
+      "refresh_error": "Aktualisierungsfehler",
+      "no_ical": "Kein Kalender konfiguriert."
+    }
+  }
 }

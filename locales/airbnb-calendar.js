@@ -123,6 +123,22 @@
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
       var defaultIcal = cfg && (cfg.airbnb_ical || cfg.airbnb_ical_url || cfg.AIRBNB_ICAL);
+      // detect language (simple, robust heuristics)
+      function detectLang(){
+        try{
+          try{ var ls = localStorage.getItem('site-lang'); if(ls) return (ls||'').substring(0,2); }catch(e){}
+          try{ var sel = document.getElementById('languageSelect'); if(sel && sel.value) return (sel.value||'').substring(0,2); }catch(e){}
+          if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
+          var nodes = document.querySelectorAll('.lang-content[data-lang]'); for(var i=0;i<nodes.length;i++){ var el=nodes[i]; var s=window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
+          var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
+          if(navigator && navigator.language) return (navigator.language||'').substring(0,2);
+        }catch(e){}
+        return 'fr';
+      }
+      var lang = (detectLang() || 'fr').toLowerCase();
+      var labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
+        loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Actualisé', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
+      };
       var nodes = document.querySelectorAll('.airbnb-calendar');
       nodes.forEach(function(node){
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
@@ -130,8 +146,8 @@
         // build container with refresh button
         node.innerHTML = '';
         var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
-        var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent='Chargement du calendrier…';
-        var btn = document.createElement('button'); btn.textContent='Actualiser'; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
+        var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
+        var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
         topBar.appendChild(status); topBar.appendChild(btn); node.appendChild(topBar);
         node.innerHTML += '<div class="airbnb-calendar-body"></div>';
         var body = node.querySelector('.airbnb-calendar-body');
@@ -146,15 +162,15 @@
           });
           renderCalendar(body, unavailable);
           renderReservationsList(body, unavailable);
-          status.textContent = 'Calendrier chargé';
+          status.textContent = labels.updated;
           // add link to Airbnb listing
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-          var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = 'Voir l\'annonce Airbnb'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+          var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
           // wire refresh
-          btn.addEventListener('click', function(){ status.textContent='Actualisation…'; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent='Actualisé'; }).catch(function(){ status.textContent='Erreur d\'actualisation'; }); });
+          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(){
-          node.innerHTML = '<p>Impossible de charger le calendrier. <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">Consulter l\'annonce sur Airbnb</a></p>';
+          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
         });
       });
     }).catch(function(){
