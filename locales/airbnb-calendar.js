@@ -169,8 +169,21 @@
           link.appendChild(a); node.appendChild(link);
           // wire refresh
           btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
-        }).catch(function(){
-          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
+        }).catch(function(err){
+          // direct fetch failed (likely CORS). Try local proxy at http://localhost:8001/airbnb.ics
+          status.textContent = labels.refreshing;
+          var proxy = 'http://localhost:8001/airbnb.ics?url=' + encodeURIComponent(ical);
+          fetch(proxy).then(function(r){ if(!r.ok) throw new Error('proxy fetch failed'); return r.text(); }).then(function(txt){
+            var events = parseICal(txt);
+            var unavailable = new Set();
+            events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
+            body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent = labels.updated;
+            var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
+            var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+            link.appendChild(a); node.appendChild(link);
+          }).catch(function(e){
+            node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
+          });
         });
       });
     }).catch(function(){
