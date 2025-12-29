@@ -45,6 +45,8 @@ Ce fichier recense les fichiers et dossiers principaux du projet avec une brève
 - `locales/site-vars.json` centralise les chemins d'images et textes courts (ex. `contact_email`) : vérifiez-le avant de tester le formulaire de contact.
 - Pour le développement local, servir via HTTP (ex. `python3 -m http.server`) pour que les `fetch` fonctionnent.
 
+- Pour les instructions détaillées pour le développement local, voir la section "Développement / Debug" de `README.md`.
+
 ---
 
 Fichier généré automatiquement — modifiez si vous souhaitez ajouter des descriptions supplémentaires ou détailler des fichiers spécifiques.
