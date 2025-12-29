@@ -404,6 +404,45 @@
 
     // Observe DOM changes so the script works when locale HTML is injected
     // (e.g. via the language selector which replaces page fragments).
+    // Detect Airbnb iframe embedding restrictions and provide a safe fallback
+    function detectAndReplaceBlockedAirbnbIframes(){
+      try{
+        var iframes = document.querySelectorAll('iframe[src*="airbnb.fr/multicalendar"]');
+        iframes.forEach(function(ifr){
+          try{
+            // run the check asynchronously to allow load events
+            setTimeout(function(){
+              var blocked = false;
+              try{
+                // Accessing cross-origin iframe location will throw if embedding is blocked
+                var href = ifr.contentWindow && ifr.contentWindow.location && ifr.contentWindow.location.href;
+                // If we could read href, assume it's fine (most likely not the case)
+              }catch(e){ blocked = true; }
+              // Some browsers never allow accessing location even if visible; also treat zero-size or blank as blocked
+              if(blocked || ifr.clientHeight === 0 || ifr.clientWidth === 0){
+                var container = document.createElement('div');
+                container.className = 'airbnb-iframe-fallback';
+                container.style.cssText = 'max-width:980px;margin:0 auto;padding:1rem;border-radius:8px;background:#fff;border:1px solid #eee;text-align:center;';
+                var p = document.createElement('p');
+                p.style.margin = '0 0 0.5rem';
+                p.textContent = 'Le calendrier Airbnb ne peut pas s\'afficher ici. Ouvrir la page Airbnb pour consulter les disponibilités.';
+                var a = document.createElement('a');
+                a.href = ifr.src || 'https://www.airbnb.fr/multicalendar/43505513';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.textContent = 'Voir le calendrier sur Airbnb';
+                a.style.cssText = 'display:inline-block;margin-top:0.5rem;padding:0.6rem 1rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+                container.appendChild(p);
+                container.appendChild(a);
+                try{ ifr.parentNode && ifr.parentNode.replaceChild(container, ifr); }catch(e){ }
+              }
+            }, 600);
+          }catch(e){}
+        });
+      }catch(e){}
+    }
+    // run on initial load
+    try{ detectAndReplaceBlockedAirbnbIframes(); }catch(e){}
     try{
       var obs = new MutationObserver(function(muts){
         var found = false;
