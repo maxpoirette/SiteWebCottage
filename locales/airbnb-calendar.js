@@ -170,9 +170,11 @@
           // wire refresh
           btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(err){
-          // direct fetch failed (likely CORS). Try local proxy at http://localhost:8001/airbnb.ics
+          // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
           status.textContent = labels.refreshing;
-          var proxy = 'http://localhost:8001/airbnb.ics?url=' + encodeURIComponent(ical);
+          var proxyBase = (cfg && (cfg.airbnb_ics_proxy || cfg.ics_proxy)) || 'http://localhost:8001/airbnb.ics?url=';
+          function buildProxyUrl(base, url){ try{ if(!base) return null; if(base.indexOf('{url}')!==-1) return base.replace('{url}', encodeURIComponent(url)); if(base.indexOf('?')!==-1 && base.indexOf('=')!==-1) return base + encodeURIComponent(url); return base + (base.endsWith('/')? '': '/') + '?url=' + encodeURIComponent(url); }catch(e){ return base + encodeURIComponent(url); } }
+          var proxy = buildProxyUrl(proxyBase, ical);
           fetch(proxy).then(function(r){ if(!r.ok) throw new Error('proxy fetch failed'); return r.text(); }).then(function(txt){
             var events = parseICal(txt);
             var unavailable = new Set();
