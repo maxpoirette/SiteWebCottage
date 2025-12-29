@@ -87,6 +87,39 @@
     container.appendChild(wrapper); container.appendChild(legend);
   }
 
+  function computeRangesFromSet(unavailableSet){
+    var dates = Array.from(unavailableSet).sort();
+    var ranges = [];
+    var start = null, end = null;
+    dates.forEach(function(d){
+      if(!start){ start = d; end = d; return; }
+      var prev = new Date(end);
+      prev.setUTCDate(prev.getUTCDate()+1);
+      var prevKey = prev.toISOString().slice(0,10);
+      if(d === prevKey){ end = d; }
+      else { ranges.push([start,end]); start = d; end = d; }
+    });
+    if(start) ranges.push([start,end]);
+    return ranges;
+  }
+
+  function renderReservationsList(container, unavailableSet){
+    try{
+      var ranges = computeRangesFromSet(unavailableSet);
+      var list = document.createElement('div'); list.style.marginTop='10px';
+      if(!ranges.length){ list.innerHTML = '<p style="text-align:center;margin:0.4rem 0;color:#666">Aucune réservation affichée.</p>'; container.appendChild(list); return; }
+      var title = document.createElement('h4'); title.textContent='Périodes réservées'; title.style.margin='8px 0 6px'; title.style.fontSize='0.95rem'; list.appendChild(title);
+      var ul = document.createElement('ul'); ul.style.margin='0'; ul.style.paddingLeft='1rem'; ranges.forEach(function(r){
+        var s = r[0], e = r[1];
+        var sd = new Date(s), ed = new Date(e);
+        var nights = Math.round((ed - sd)/(1000*60*60*24))+1;
+        var li = document.createElement('li'); li.style.marginBottom='4px'; li.textContent = sd.toISOString().slice(0,10) + ' → ' + ed.toISOString().slice(0,10) + ' ('+nights+' j)';
+        ul.appendChild(li);
+      });
+      list.appendChild(ul); container.appendChild(list);
+    }catch(e){}
+  }
+
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
       var defaultIcal = cfg && (cfg.airbnb_ical || cfg.airbnb_ical_url || cfg.AIRBNB_ICAL);
@@ -94,7 +127,14 @@
       nodes.forEach(function(node){
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
         if(!ical){ node.innerHTML = '<p>Aucun calendrier configuré.</p>'; return; }
-        node.innerHTML = '<p style="text-align:center;">Chargement du calendrier…</p>';
+        // build container with refresh button
+        node.innerHTML = '';
+        var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
+        var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent='Chargement du calendrier…';
+        var btn = document.createElement('button'); btn.textContent='Actualiser'; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
+        topBar.appendChild(status); topBar.appendChild(btn); node.appendChild(topBar);
+        node.innerHTML += '<div class="airbnb-calendar-body"></div>';
+        var body = node.querySelector('.airbnb-calendar-body');
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
           var events = parseICal(txt);
           var unavailable = new Set();
@@ -104,11 +144,15 @@
             var days = daysBetween(s,e);
             days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); });
           });
-          renderCalendar(node, unavailable);
+          renderCalendar(body, unavailable);
+          renderReservationsList(body, unavailable);
+          status.textContent = 'Calendrier chargé';
           // add link to Airbnb listing
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = 'Voir l\'annonce Airbnb'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
+          // wire refresh
+          btn.addEventListener('click', function(){ status.textContent='Actualisation…'; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent='Actualisé'; }).catch(function(){ status.textContent='Erreur d\'actualisation'; }); });
         }).catch(function(){
           node.innerHTML = '<p>Impossible de charger le calendrier. <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">Consulter l\'annonce sur Airbnb</a></p>';
         });
