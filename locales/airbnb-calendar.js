@@ -148,6 +148,12 @@
       nodes.forEach(function(node){
         try{ node.classList.add('airbnb-calendar-initialized'); }catch(e){}
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
+        // if dataset contains a template token like {{AIRBNB_ICAL}} treat it as empty
+        try{
+          if(typeof ical === 'string' && /\{\{.*\}\}/.test(ical)){
+            ical = icalUrlOverride || defaultIcal;
+          }
+        }catch(e){}
         if(!ical){ node.innerHTML = '<p>' + labels.no_ical + '</p>'; return; }
         // build container with refresh button
         node.innerHTML = '';
