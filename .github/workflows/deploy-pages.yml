@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+# Grant workflow permissions to write repository contents (needed to publish gh-pages)
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
