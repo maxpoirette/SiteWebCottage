@@ -1,0 +1,18 @@
+/* Cards and grid styles shared across locale fragments */
+.content-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1rem;
+}
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:1rem;
+  overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,0.08)}
+.card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem}
+.card-icon{font-size:1.6rem;margin-bottom:0.5rem}
+.card h3{margin:0 0 0.5rem}

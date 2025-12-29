@@ -1,0 +1,149 @@
+<nav>
+  <ul>
+    <li><a href="#bienvenue">Home</a></li>
+    <li><a href="#region">Region</a></li>
+    <li><a href="#residence">Residence</a></li>
+    <li><a href="#logement">Accommodation</a></li>
+    <li><a href="#reservation">Booking</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<link rel="stylesheet" href="/assets/styles/cards.css">
+
+<div id="bienvenue" class="hero" style="background: linear-gradient(rgba(133, 183, 155, 0.7), rgba(30,87,56,0.7)), url('{{IMG_BANNIERE}}'); background-size: cover; background-position: center;">
+  <div class="hero-content">
+    <h1>Welcome to Parentis‑en‑Born</h1>
+    <p>Your stay between lake and ocean in the Landes</p>
+  </div>
+</div>
+
+<section id="region">
+  <h2>Discover the Landes</h2>
+  <p style="text-align:center; font-size:1.1rem; margin-bottom:2rem;">
+    Parentis‑en‑Born offers an exceptional setting in the heart of the Landes pine forest, between the large lake and the Atlantic Ocean.
+  </p>
+  <div class="content-grid">
+    <div class="card">
+      <img src="{{IMG_OCEAN}}" alt="Biscarrosse beach" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <h3>🌊 The Atlantic Ocean</h3>
+      <p>Only 20 km away — enjoy the beaches of Biscarrosse and Mimizan. Surfing, swimming and long sandy walks await.</p>
+    </div>
+    <div class="card">
+      <img src="{{IMG_LAC}}" alt="Lake Parentis" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <h3>🏞️ Lake Parentis</h3>
+      <p>One of the largest lakes in the Landes (3600 ha), warm shallow waters ideal for swimming and water sports.</p>
+    </div>
+    <div class="card">
+      <img src="{{IMG_FORET}}" alt="Landes forest" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <h3>🌲 The Landes Forest</h3>
+      <p>Explore the majestic pine forest, the Landes de Gascogne Regional Park, and cycle the Vélodyssée on safe paths.</p>
+    </div>
+  </div>
+</section>
+
+<section id="residence">
+  <h2>The Residence</h2>
+  <p style="text-align:center; font-size:1.1rem; margin-bottom:2rem;">
+    A modern, secure residence with all amenities for your comfort.
+  </p>
+  <div class="content-grid">
+    <div class="card">
+      <img src="{{IMG_PARKING}}" alt="Private parking" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <div class="card-icon">🅿️</div>
+      <h3>Private parking</h3>
+      <p>Secure parking included</p>
+    </div>
+    <div class="card">
+      <img src="{{IMG_PISCINE}}" alt="Swimming pool" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <div class="card-icon">🏊</div>
+      <h3>Swimming pool</h3>
+      <p>Shared pool, seasonal access</p>
+    </div>
+    <div class="card">
+      <img src="{{IMG_ESPACES}}" alt="Green areas" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <div class="card-icon">🌳</div>
+      <h3>Green areas</h3>
+      <p>Landscaped gardens and relaxation spaces</p>
+    </div>
+    <div class="card">
+      <img src="{{IMG_SECURITE}}" alt="Security" style="width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem;">
+      <div class="card-icon">🔒</div>
+      <h3>Security</h3>
+      <p>Closed residence with access code</p>
+    </div>
+  </div>
+</section>
+
+<section id="logement">
+  <h2>The Accommodation</h2>
+  <p style="text-align:center; font-size:1.1rem; margin-bottom:2rem;">
+    Comfortable, fully equipped apartment for 4 people.
+  </p>
+  <div class="content-grid">
+    <div class="card">
+      <h3>🛏️ Bedrooms</h3>
+      <p><strong>2 comfortable bedrooms</strong><br>- Bedroom 1: double bed<br>- Bedroom 2: 2 single beds<br>Quality linens and storage</p>
+    </div>
+    <div class="card">
+      <h3>🛋️ Living room</h3>
+      <p><strong>Bright living area</strong><br>Sofa bed, flat screen TV, WiFi, dining table, balcony</p>
+    </div>
+    <div class="card">
+      <h3>🍳 Kitchen</h3>
+      <p><strong>Fully equipped kitchen</strong><br>Fridge, oven, hob, microwave, dishwasher, coffee maker</p>
+    </div>
+    <div class="card">
+      <h3>🚿 Bathroom</h3>
+      <p><strong>Modern bathroom</strong><br>Shower, WC, sink, hairdryer, towels provided</p>
+    </div>
+  </div>
+  <div style="margin-top:2rem; padding:1.5rem; background:white; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+    <h3 style="color:#2d7a4f; margin-bottom:1rem;">✨ Additional amenities</h3>
+    <p>📶 Highspeed WiFi • 🌡️ Heating • 🧺 Washing machine • 👶 Travel cot on request</p>
+  </div>
+</section>
+
+<section id="reservation">
+  <h2>Booking</h2>
+  <p style="text-align:center; font-size:1.05rem; margin-bottom:1rem;">Check availability and book on Airbnb.</p>
+  <div style="max-width:980px;margin:0 auto;">
+    <div class="airbnb-calendar" data-ical="{{AIRBNB_ICAL}}"></div>
+  </div>
+  <script src="/locales/airbnb-calendar.js"></script>
+</section>
+
+<section id="contact">
+  <h2>Contact</h2>
+    <div class="contact-form">
+    <form method="POST" action="#" data-dynamic-form>
+      <input type="hidden" name="_next" value="/locales/merci_en.html">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_subject" value="New message from website">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" name="phone">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea name="message" required></textarea>
+      </div>
+      <button type="submit" class="btn">Send</button>
+    </form>
+    <a href="#" class="airbnb-link">{{AIRBNB_TEXT}}</a>
+  </div>
+
+</section>
+
+<footer>
+  <p>&copy; {{YEAR}} Holiday rental Parentis‑en‑Born, Landes</p>
+<script src="/locales/contact-init.js"></script>
+</footer>

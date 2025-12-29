@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico">
+    <title>Location Vacances - Parentis-en-Born, Landes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .language-selector select {
+            padding: 8px 12px;
+            border: 2px solid #2d7a4f;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .lang-content {
+            display: none;
+        }
+
+        .lang-content[data-lang="fr"] {
+            display: block;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #2d7a4f 0%, #1e5738 100%);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            padding: 0 20px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(45,122,79,0.7), rgba(30,87,56,0.7)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%232d7a4f" width="1200" height="600"/><path fill="%23fff" opacity="0.1" d="M0,400 Q300,300 600,400 T1200,400 L1200,600 L0,600 Z"/><circle fill="%23fff" opacity="0.05" cx="200" cy="150" r="80"/><circle fill="%23fff" opacity="0.05" cx="900" cy="200" r="60"/></svg>');
+            background-size: cover;
+            background-position: center;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        h2 {
+            color: #2d7a4f;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #2d7a4f;
+            margin-bottom: 1rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: #2d7a4f;
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2d7a4f;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2d7a4f 0%, #1e5738 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .airbnb-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #FF5A5F;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .airbnb-link:hover {
+            transform: scale(1.02);
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            section {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <select id="languageSelect">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="nl">🇳🇱 Nederlands</option>
+            <option value="de">🇩🇪 Deutsch</option>
+        </select>
+    </div>
+    <!-- Conteneur dynamique : le contenu de la langue sera injecté ici -->
+    <div id="langRoot"></div>
+
+    <script>
+    (function(){
+      const select = document.getElementById('languageSelect');
+      const root = document.getElementById('langRoot');
+      let siteVars = {};
+
+            async function loadSiteVars(){
+                try{
+                    const r = await fetch('./locales/site-vars.json', { cache: 'no-cache' });
+                    if(r.ok) siteVars = await r.json();
+                }catch(e){
+                    // failed to load site-vars.json — continue
+                }
+                // expose for fallback when contact-init.js cannot fetch the file (GitHub Pages path quirks)
+                try{ window.__SITE_VARS_GLOBAL__ = siteVars; }catch(e){}
+            }
+
+      async function loadLocale(lang){
+        try{
+          const res = await fetch(`./locales/${lang}.html`, { cache: 'no-cache' });
+          if(!res.ok) throw new Error(res.statusText);
+          let html = await res.text();
+
+          // remplacements tokens
+          if(siteVars.images){
+            Object.keys(siteVars.images).forEach(k => {
+              const token = new RegExp(`{{IMG_${k}}}`, 'g');
+              html = html.replace(token, siteVars.images[k]);
+            });
+          }
+          if(siteVars.airbnb_text){
+            html = html.replace(/{{AIRBNB_TEXT}}/g, siteVars.airbnb_text);
+          }
+          html = html.replace(/{{YEAR}}/g, (siteVars.year || new Date().getFullYear()));
+
+          root.innerHTML = html;
+
+                    // inject contact-init.js so dynamic form actions are set
+                    if (!document.querySelector('script[data-contact-init]')){
+                        const s = document.createElement('script');
+                        s.src = 'locales/contact-init.js';
+                        s.dataset.contactInit = '1';
+                        document.body.appendChild(s);
+                    }
+
+                    if(location.hash){
+                        const t = root.querySelector(location.hash);
+                        if(t) t.scrollIntoView({behavior:'smooth'});
+                    }
+        }catch(err){
+          console.error('Erreur chargement locale', lang, err);
+          root.innerHTML = '<p>Erreur de chargement — voir la console.</p>';
+        }
+      }
+
+      // init
+      (async ()=>{
+        await loadSiteVars();
+        const initial = localStorage.getItem('site-lang') || 'fr';
+        select.value = initial;
+        await loadLocale(initial);
+      })();
+
+            // changement de langue — revenir à l'accueil (`#bienvenue`) avant de charger la locale
+            select.addEventListener('change', e => {
+                const lang = e.target.value;
+                localStorage.setItem('site-lang', lang);
+                // remplacer l'ancre actuelle sans ajouter une entrée d'historique
+                history.replaceState(null, '', '#bienvenue');
+                loadLocale(lang);
+            });
+
+      // intercepter les ancres internes
+      root.addEventListener('click', e => {
+        const a = e.target.closest('a[href^="#"]');
+        if(!a) return;
+        const hash = a.getAttribute('href');
+        const target = root.querySelector(hash);
+        if(target){
+          e.preventDefault();
+          target.scrollIntoView({behavior:'smooth'});
+          history.replaceState(null,'', hash);
+        }
+      });
+    })();
+    </script>
+</body>
+</html>
+
