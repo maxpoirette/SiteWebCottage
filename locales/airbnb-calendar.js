@@ -1,4 +1,6 @@
 (function(){
+  // diagnostic flag
+  try{ window.__airbnbCalendarLoaded = (window.__airbnbCalendarLoaded||0) + 1; }catch(e){}
   // Minimal Airbnb iCal -> calendar renderer
   function detectBase(){
     var s = document.currentScript;
@@ -140,11 +142,18 @@
         loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Actualisé', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
       };
       var nodes = document.querySelectorAll('.airbnb-calendar');
+      if(!nodes || nodes.length===0){
+        console.warn('airbnb-calendar: no .airbnb-calendar nodes found');
+      }
       nodes.forEach(function(node){
+        try{ node.classList.add('airbnb-calendar-initialized'); }catch(e){}
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
-        if(!ical){ node.innerHTML = '<p>Aucun calendrier configuré.</p>'; return; }
+        if(!ical){ node.innerHTML = '<p>' + labels.no_ical + '</p>'; return; }
         // build container with refresh button
         node.innerHTML = '';
+        // quick visual marker to help debugging if layout hides the calendar
+        var debugMarker = document.createElement('div'); debugMarker.style.fontSize='0.9rem'; debugMarker.style.color='#666'; debugMarker.style.textAlign='center'; debugMarker.style.marginBottom='6px'; debugMarker.textContent = labels.loading + ' (initialisé)';
+        node.appendChild(debugMarker);
         var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
         var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
         var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
@@ -152,6 +161,7 @@
         node.innerHTML += '<div class="airbnb-calendar-body"></div>';
         var body = node.querySelector('.airbnb-calendar-body');
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
+          try{ debugMarker.textContent = labels.loading + ' (récupération …)' }catch(e){}
           var events = parseICal(txt);
           var unavailable = new Set();
           events.forEach(function(ev){
@@ -163,6 +173,7 @@
           renderCalendar(body, unavailable);
           renderReservationsList(body, unavailable);
           status.textContent = labels.updated;
+          try{ debugMarker.style.display='none'; }catch(e){}
           // add link to Airbnb listing
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
@@ -170,6 +181,7 @@
           // wire refresh
           btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(err){
+          console.error('airbnb-calendar: fetch error', err);
           // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
           status.textContent = labels.refreshing;
           var proxyBase = (cfg && (cfg.airbnb_ics_proxy || cfg.ics_proxy)) || 'http://localhost:8001/airbnb.ics?url=';
