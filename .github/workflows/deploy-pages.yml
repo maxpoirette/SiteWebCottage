@@ -13,15 +13,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare public directory
+      - name: Prepare public directory from tracked files
         run: |
+          set -e
+          rm -rf public
           mkdir -p public
-          # Copy site files to public, exclude development and tooling folders
-          rsync -av --exclude='.git' --exclude='.github' --exclude='tools' --exclude='node_modules' --exclude='*.md' --exclude='README.md' --exclude='REPOSITORY.md' --exclude='tools/proxy' ./ public/
+          # Copy only tracked files to public, exclude development folders
+          git ls-files | while read -r file; do
+            case "$file" in
+              .github/*|tools/*)
+                continue
+                ;;
+            esac
+            mkdir -p "public/$(dirname "$file")"
+            cp -R "$file" "public/$file"
+          done
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          publish_branch: gh-pages
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
