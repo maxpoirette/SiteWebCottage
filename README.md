@@ -22,22 +22,9 @@ Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le 
 - Le `index.html` charge dynamiquement la locale via `fetch` et remplace les tokens.
 - Les images sont dans `photos/` et référencées depuis `site-vars.json`.
 
-## Fichiers importants
+## Répertoire des fichiers
 
-- `index.html` : page principale, loader des locales et JS de navigation
-- `locales/` : dossier contenant un fichier HTML par langue (fr,en,es,nl,de)
-- `locales/site-vars.json` : variables centralisées (images, year, airbnb text)
-- `photos/` : images (ex : `biscarrosse-plage-768x506.webp`)
-
-## Tokens disponibles dans les fichiers `locales/*.html`
-
-- `{{IMG_OCEAN}}` — image de l'Océan
-- `{{IMG_LAC}}` — image du Lac
-- `{{IMG_FORET}}` — image de la Forêt
-- `{{AIRBNB_TEXT}}` — texte du lien Airbnb
-- `{{YEAR}}` — année affichée en footer
-
-Remplacez ces tokens dans les fichiers `locales/*.html` si besoin, ou modifiez `locales/site-vars.json` pour changer images/textes sans toucher les fichiers de contenu.
+Pour la liste complète des fichiers et leurs descriptions, voir [REPOSITORY.md](REPOSITORY.md).
 
 ## Développement / Debug
 
