@@ -178,6 +178,6 @@
     });
   }
 
-  // auto-run on DOM ready
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', mountAll); else mountAll();
+  // auto-run on DOM ready — call mountAll without passing the event object
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ mountAll(); }); else mountAll();
 })();
