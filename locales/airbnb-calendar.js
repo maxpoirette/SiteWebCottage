@@ -159,7 +159,7 @@
       }
       var lang = (detectLang() || 'fr').toLowerCase();
       var labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
-        loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Actualisé', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
+        loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Sectionner la période', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
       };
       var nodes = document.querySelectorAll('.airbnb-calendar');
       if(!nodes || nodes.length===0){
@@ -206,9 +206,9 @@
         // set defaults to current month/year
         monthSelect.value = (nowLocal.getMonth()+1).toString().padStart(2,'0'); yearSelect.value = startY;
         selWrap.appendChild(monthSelect); selWrap.appendChild(yearSelect);
-        var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.45rem 0.7rem;border-radius:6px;cursor:pointer';
+        // no refresh button — selection suffices
         var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='8px'; left.appendChild(status); left.appendChild(selWrap);
-        topBar.appendChild(left); topBar.appendChild(btn); node.appendChild(topBar);
+        topBar.appendChild(left); node.appendChild(topBar);
         var body = document.createElement('div'); body.className = 'airbnb-calendar-body'; node.appendChild(body);
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
           try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
@@ -244,13 +244,11 @@
           monthSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
           yearSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
 
-          // add link to Airbnb listing
+          // add booking button (uses configured URL if present, else default listing)
+          var listingUrl = cfg && (cfg.airbnb_url || cfg.airbnb) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-          var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = '📍 Réserver via Airbnb (bientôt)'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
-          // wire refresh — re-fetch and re-render keeping selected month
-          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events2 = parseICal(txt); var unavailable2 = new Set(); events2.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable2.add(d.toISOString().slice(0,10)); }); }); // replace unavailable and re-render
-            unavailable = unavailable2; doRender(parseInputMonth()); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
           // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
@@ -263,8 +261,9 @@
             var unavailable = new Set();
             events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
             body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent = labels.updated;
+            var listingUrl = cfg && (cfg.airbnb_url || cfg.airbnb) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-            var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = '📍 Réserver via Airbnb (bientôt)'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
             link.appendChild(a); node.appendChild(link);
           }).catch(function(e){
             node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
