@@ -426,8 +426,9 @@
                 var p = document.createElement('p');
                 p.style.margin = '0 0 0.5rem';
                 p.textContent = 'Le calendrier Airbnb ne peut pas s\'afficher ici. Ouvrir la page Airbnb pour consulter les disponibilités.';
-                var a = document.createElement('a');
-                a.href = ifr.src || 'https://www.airbnb.fr/multicalendar/43505513';
+                  var listingFallback = (typeof __contact_cfg_cache !== 'undefined' && __contact_cfg_cache && (__contact_cfg_cache.airbnb_url || __contact_cfg_cache.airbnb)) || (window.__SITE_VARS_GLOBAL__ && (window.__SITE_VARS_GLOBAL__.airbnb_url || window.__SITE_VARS_GLOBAL__.airbnb)) || 'https://www.airbnb.fr';
+                  var a = document.createElement('a');
+                  a.href = ifr.src || listingFallback;
                 a.target = '_blank';
                 a.rel = 'noopener';
                 a.textContent = 'Voir le calendrier sur Airbnb';
