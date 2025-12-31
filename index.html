@@ -308,7 +308,17 @@
           }
           html = html.replace(/{{YEAR}}/g, (siteVars.year || new Date().getFullYear()));
 
-          root.innerHTML = html;
+                    if(!root){
+                        console.error('Lang root element (#langRoot) introuvable — abandon du rendu.');
+                        return;
+                    }
+
+                    try{
+                        root.innerHTML = html;
+                    }catch(e){
+                        console.error('Erreur lors de l\'injection HTML dans #langRoot', e);
+                        return;
+                    }
 
                     // inject contact-init.js so dynamic form actions are set
                     if (!document.querySelector('script[data-contact-init]')){
@@ -318,9 +328,14 @@
                         document.body.appendChild(s);
                     }
 
-                    if(location.hash){
-                        const t = root.querySelector(location.hash);
-                        if(t) t.scrollIntoView({behavior:'smooth'});
+                    // sécuriser l'utilisation de location.hash (éviter les sélecteurs invalides)
+                    try{
+                        if(location.hash && /^#[A-Za-z][\w:.-]*$/.test(location.hash)){
+                            const t = root.querySelector(location.hash);
+                            if(t) t.scrollIntoView({behavior:'smooth'});
+                        }
+                    }catch(e){
+                        console.warn('Ignoré: sélection d\'ancre invalide', location.hash, e);
                     }
         }catch(err){
           console.error('Erreur chargement locale', lang, err);
