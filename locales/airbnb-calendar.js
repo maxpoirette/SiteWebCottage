@@ -66,11 +66,15 @@
 
   function renderCalendar(container, unavailableSet){
     container.innerHTML = '';
-    var now = new Date(); now.setUTCDate(1); now.setUTCHours(0,0,0,0);
+    // if a centre month Date is provided via arguments, use it; otherwise default to today
+    var centre = arguments.length>2 && arguments[2] ? arguments[2] : new Date();
+    // normalize to UTC month start
+    centre = new Date(Date.UTC(centre.getFullYear(), centre.getMonth(), 1));
     var months = 3;
     var wrapper = document.createElement('div'); wrapper.className='airbnb-calendar-wrapper'; wrapper.style.display='grid'; wrapper.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; wrapper.style.gap='12px';
     for(var m=0;m<months;m++){
-      var d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth()+m, 1));
+      // start from the month before the centre
+      var d = new Date(Date.UTC(centre.getUTCFullYear(), centre.getUTCMonth()-1 + m, 1));
       var monthBox = document.createElement('div'); monthBox.style.background='#fff'; monthBox.style.padding='8px'; monthBox.style.border='1px solid #e6e6e6'; monthBox.style.borderRadius='6px';
       var title = document.createElement('h4'); title.style.margin='0 0 8px'; title.style.fontSize='1rem'; title.textContent = d.toLocaleString(undefined,{month:'long', year:'numeric'});
       monthBox.appendChild(title);
@@ -188,16 +192,19 @@
         // build container with refresh button
         node.innerHTML = '';
         // quick visual marker to help debugging if layout hides the calendar
-        var debugMarker = document.createElement('div'); debugMarker.style.fontSize='0.9rem'; debugMarker.style.color='#666'; debugMarker.style.textAlign='center'; debugMarker.style.marginBottom='6px'; debugMarker.textContent = labels.loading + ' (initialisé)';
+        var debugMarker = document.createElement('div'); debugMarker.style.fontSize='0.9rem'; debugMarker.style.color='#666'; debugMarker.style.textAlign='center'; debugMarker.style.marginBottom='6px'; debugMarker.textContent = labels.loading;
         node.appendChild(debugMarker);
         var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
         var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
+        var monthInput = document.createElement('input'); monthInput.type = 'month'; monthInput.style.marginRight='8px';
+        var nowLocal = new Date(); var yy = nowLocal.getFullYear(); var mm = (nowLocal.getMonth()+1).toString().padStart(2,'0'); monthInput.value = yy + '-' + mm;
         var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
-        topBar.appendChild(status); topBar.appendChild(btn); node.appendChild(topBar);
+        var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.appendChild(status); left.appendChild(monthInput);
+        topBar.appendChild(left); topBar.appendChild(btn); node.appendChild(topBar);
         node.innerHTML += '<div class="airbnb-calendar-body"></div>';
         var body = node.querySelector('.airbnb-calendar-body');
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
-          try{ debugMarker.textContent = labels.loading + ' (récupération …)' }catch(e){}
+          try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
           var events = parseICal(txt);
           var unavailable = new Set();
           events.forEach(function(ev){
@@ -206,16 +213,33 @@
             var days = daysBetween(s,e);
             days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); });
           });
-          renderCalendar(body, unavailable);
-          renderReservationsList(body, unavailable);
-          status.textContent = labels.updated;
-          try{ debugMarker.style.display='none'; }catch(e){}
+
+          function parseInputMonth(){
+            try{
+              var v = monthInput.value; if(!v) return new Date(); var p = v.split('-'); return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1);
+            }catch(e){ return new Date(); }
+          }
+
+          function doRender(centerDate){
+            body.innerHTML='';
+            renderCalendar(body, unavailable, centerDate);
+            renderReservationsList(body, unavailable);
+            status.textContent = labels.updated;
+            try{ debugMarker.style.display='none'; }catch(e){}
+          }
+
+          // initial render: selected month or today
+          doRender(parseInputMonth());
+
+          // wire month change
+          monthInput.addEventListener('change', function(){ doRender(parseInputMonth()); });
+
           // add link to Airbnb listing
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
           // wire refresh
-          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
+          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); doRender(parseInputMonth()); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
           // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
