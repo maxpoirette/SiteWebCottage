@@ -181,7 +181,7 @@
             if(!sitePath.endsWith('/')) sitePath += '/';
             var absolute = location.origin + sitePath + icalNorm;
             // normalize double-slashes
-            absolute = absolute.replace(/([^:]\/)\/g, '$1');
+            absolute = absolute.replace(/([^:]\/)\/+/g, '$1');
             ical = absolute;
           }
         }catch(e){}
