@@ -174,10 +174,15 @@
         // resolve ical URL relative to script base so leading '/' doesn't break on repo pages
         try{
           if(ical && !(ical.indexOf('http://')===0 || ical.indexOf('https://')===0)){
-            // if iCal starts with a slash it becomes absolute to origin when used with new URL(base),
-            // so remove leading slashes to keep it relative to the repo/script base path
+            // prefer an absolute URL based on the current site path so Pages paths work
             var icalNorm = (''+ical).replace(/^\/+/, '');
-            ical = new URL(icalNorm, base).href;
+            var sitePath = (location.pathname || '/');
+            if(sitePath.indexOf('/') !== 0) sitePath = '/' + sitePath;
+            if(!sitePath.endsWith('/')) sitePath += '/';
+            var absolute = location.origin + sitePath + icalNorm;
+            // normalize double-slashes
+            absolute = absolute.replace(/([^:]\/)\/g, '$1');
+            ical = absolute;
           }
         }catch(e){}
         // build container with refresh button
