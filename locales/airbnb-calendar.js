@@ -196,13 +196,20 @@
         node.appendChild(debugMarker);
         var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
         var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
-        var monthInput = document.createElement('input'); monthInput.type = 'month'; monthInput.style.marginRight='8px';
-        var nowLocal = new Date(); var yy = nowLocal.getFullYear(); var mm = (nowLocal.getMonth()+1).toString().padStart(2,'0'); monthInput.value = yy + '-' + mm;
-        var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer';
-        var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.appendChild(status); left.appendChild(monthInput);
+        // build nicer month+year selectors (native month input looks inconsistent)
+        var selWrap = document.createElement('div'); selWrap.style.display='flex'; selWrap.style.alignItems='center'; selWrap.style.gap='8px';
+        var monthSelect = document.createElement('select'); monthSelect.style.padding='6px 8px'; monthSelect.style.border='1px solid #ddd'; monthSelect.style.borderRadius='6px';
+        var monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+        for(var mi=0;mi<12;mi++){ var mo = document.createElement('option'); mo.value = (mi+1).toString().padStart(2,'0'); mo.textContent = monthNames[mi]; monthSelect.appendChild(mo); }
+        var yearSelect = document.createElement('select'); yearSelect.style.padding='6px 8px'; yearSelect.style.border='1px solid #ddd'; yearSelect.style.borderRadius='6px';
+        var nowLocal = new Date(); var startY = nowLocal.getFullYear(); for(var y=0;y<6;y++){ var yo = document.createElement('option'); yo.value = (startY+y); yo.textContent = (startY+y); yearSelect.appendChild(yo); }
+        // set defaults to current month/year
+        monthSelect.value = (nowLocal.getMonth()+1).toString().padStart(2,'0'); yearSelect.value = startY;
+        selWrap.appendChild(monthSelect); selWrap.appendChild(yearSelect);
+        var btn = document.createElement('button'); btn.textContent=labels.refresh; btn.style.cssText='background:#2d7a4f;color:#fff;border:none;padding:0.45rem 0.7rem;border-radius:6px;cursor:pointer';
+        var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='8px'; left.appendChild(status); left.appendChild(selWrap);
         topBar.appendChild(left); topBar.appendChild(btn); node.appendChild(topBar);
-        node.innerHTML += '<div class="airbnb-calendar-body"></div>';
-        var body = node.querySelector('.airbnb-calendar-body');
+        var body = document.createElement('div'); body.className = 'airbnb-calendar-body'; node.appendChild(body);
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
           try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
           var events = parseICal(txt);
@@ -216,7 +223,9 @@
 
           function parseInputMonth(){
             try{
-              var v = monthInput.value; if(!v) return new Date(); var p = v.split('-'); return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1);
+              var y = parseInt(yearSelect.value,10) || nowLocal.getFullYear();
+              var m = parseInt(monthSelect.value,10) - 1;
+              return new Date(y, m, 1);
             }catch(e){ return new Date(); }
           }
 
@@ -231,15 +240,17 @@
           // initial render: selected month or today
           doRender(parseInputMonth());
 
-          // wire month change
-          monthInput.addEventListener('change', function(){ doRender(parseInputMonth()); });
+          // wire month/year change
+          monthSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
+          yearSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
 
           // add link to Airbnb listing
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = cfg.airbnb_url || cfg.airbnb || 'https://www.airbnb.fr'; a.target='_blank'; a.rel='noopener'; a.textContent = labels.view_listing; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
-          // wire refresh
-          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events = parseICal(txt); var unavailable = new Set(); events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); }); doRender(parseInputMonth()); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
+          // wire refresh — re-fetch and re-render keeping selected month
+          btn.addEventListener('click', function(){ status.textContent=labels.refreshing; fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){ var events2 = parseICal(txt); var unavailable2 = new Set(); events2.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable2.add(d.toISOString().slice(0,10)); }); }); // replace unavailable and re-render
+            unavailable = unavailable2; doRender(parseInputMonth()); status.textContent=labels.updated; }).catch(function(){ status.textContent=labels.refresh_error; }); });
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
           // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
