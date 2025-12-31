@@ -172,7 +172,14 @@
         }catch(e){}
         if(!ical){ node.innerHTML = '<p>' + labels.no_ical + '</p>'; return; }
         // resolve ical URL relative to script base so leading '/' doesn't break on repo pages
-        try{ if(ical && !(ical.indexOf('http://')===0 || ical.indexOf('https://')===0)){ ical = new URL(ical, base).href; } }catch(e){}
+        try{
+          if(ical && !(ical.indexOf('http://')===0 || ical.indexOf('https://')===0)){
+            // if iCal starts with a slash it becomes absolute to origin when used with new URL(base),
+            // so remove leading slashes to keep it relative to the repo/script base path
+            var icalNorm = (''+ical).replace(/^\/+/, '');
+            ical = new URL(icalNorm, base).href;
+          }
+        }catch(e){}
         // build container with refresh button
         node.innerHTML = '';
         // quick visual marker to help debugging if layout hides the calendar
