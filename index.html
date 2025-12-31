@@ -320,13 +320,23 @@
                         return;
                     }
 
-                    // inject contact-init.js so dynamic form actions are set
-                    if (!document.querySelector('script[data-contact-init]')){
-                        const s = document.createElement('script');
-                        s.src = 'locales/contact-init.js';
-                        s.dataset.contactInit = '1';
-                        document.body.appendChild(s);
-                    }
+                                        // inject contact-init.js so dynamic form actions are set
+                                        if (!document.querySelector('script[data-contact-init]')){
+                                                const s = document.createElement('script');
+                                                s.src = 'locales/contact-init.js';
+                                                s.dataset.contactInit = '1';
+                                                document.body.appendChild(s);
+                                        }
+
+                                        // inject airbnb-calendar.js when a reservation block is present (script tags added via innerHTML do not execute)
+                                        try{
+                                            if(root.querySelector('.airbnb-calendar') && !document.querySelector('script[data-airbnb-init]')){
+                                                const sc = document.createElement('script');
+                                                sc.src = 'locales/airbnb-calendar.js';
+                                                sc.dataset.airbnbInit = '1';
+                                                document.body.appendChild(sc);
+                                            }
+                                        }catch(e){/* ignore */}
 
                     // sécuriser l'utilisation de location.hash (éviter les sélecteurs invalides)
                     try{
