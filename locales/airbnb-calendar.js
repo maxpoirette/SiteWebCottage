@@ -124,25 +124,7 @@
     if(start) ranges.push([start,end]);
     return ranges;
   }
-
-  function renderReservationsList(container, unavailableSet){
-    try{
-      var ranges = computeRangesFromSet(unavailableSet);
-      var list = document.createElement('div'); list.style.marginTop='10px';
-      if(!ranges.length){ list.innerHTML = '<p style="text-align:center;margin:0.4rem 0;color:#666">Aucune réservation affichée.</p>'; container.appendChild(list); return; }
-      var title = document.createElement('h4'); title.textContent='Périodes réservées'; title.style.margin='8px 0 6px'; title.style.fontSize='0.95rem'; list.appendChild(title);
-      var ul = document.createElement('ul'); ul.style.margin='0'; ul.style.paddingLeft='1rem'; ranges.forEach(function(r){
-        var s = r[0], e = r[1];
-        var sd = new Date(s), ed = new Date(e);
-          var nights = daysBetween(sd, ed).length;
-          var lastNight = new Date(ed);
-          lastNight.setUTCDate(lastNight.getUTCDate() - 1);
-          var li = document.createElement('li'); li.style.marginBottom='4px'; li.textContent = sd.toISOString().slice(0,10) + ' → ' + lastNight.toISOString().slice(0,10) + ' ('+nights+' j)';
-        ul.appendChild(li);
-      });
-      list.appendChild(ul); container.appendChild(list);
-    }catch(e){}
-  }
+  // Reservations list removed — travelers don't need a textual list of reserved dates.
 
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
@@ -234,7 +216,6 @@
           function doRender(centerDate){
             body.innerHTML='';
             renderCalendar(body, unavailable, centerDate);
-            renderReservationsList(body, unavailable);
             status.textContent = labels.updated;
             try{ debugMarker.style.display='none'; }catch(e){}
           }
@@ -248,7 +229,7 @@
 
           // add booking button (uses configured URL if present, else default listing)
           var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
-          var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
+          var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb';
           try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
@@ -264,9 +245,9 @@
             var events = parseICal(txt);
             var unavailable = new Set();
             events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
-            body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent = labels.updated;
+            body.innerHTML=''; renderCalendar(body, unavailable); status.textContent = labels.updated;
             var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
-            var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
+            var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb';
             try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
             var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
