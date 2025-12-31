@@ -44,7 +44,7 @@
       "view_listing": "View listing on Airbnb",
       "error_fetch": "Unable to load calendar.",
       "refreshing": "Refreshing…",
-      "updated": "Sélection du mois",
+      "updated": "Select month",
       "refresh_error": "Refresh error",
       "no_ical": "No calendar configured."
     },
@@ -56,7 +56,7 @@
       "view_listing": "Ver anuncio en Airbnb",
       "error_fetch": "No se puede cargar el calendario.",
       "refreshing": "Actualizando…",
-      "updated": "Sélection du mois",
+      "updated": "Seleccionar mes",
       "refresh_error": "Error de actualización",
       "no_ical": "Ningún calendario configurado."
     },
@@ -68,7 +68,7 @@
       "view_listing": "Bekijk advertentie op Airbnb",
       "error_fetch": "Kan kalender niet laden.",
       "refreshing": "Actualiseren…",
-      "updated": "Sélection du mois",
+      "updated": "Maand selecteren",
       "refresh_error": "Fout bij actualisatie",
       "no_ical": "Geen kalender geconfigureerd."
     },
@@ -80,7 +80,7 @@
       "view_listing": "Eintrag auf Airbnb ansehen",
       "error_fetch": "Kalender konnte nicht geladen werden.",
       "refreshing": "Aktualisiere…",
-      "updated": "Sélection du mois",
+      "updated": "Monat auswählen",
       "refresh_error": "Aktualisierungsfehler",
       "no_ical": "Kein Kalender konfiguriert."
     }
