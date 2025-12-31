@@ -245,9 +245,11 @@
           yearSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
 
           // add booking button (uses configured URL if present, else default listing)
-          var listingUrl = cfg && (cfg.airbnb_url || cfg.airbnb) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
+          var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
+          var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
+          try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = '📍 Réserver via Airbnb (bientôt)'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
           link.appendChild(a); node.appendChild(link);
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
@@ -261,9 +263,11 @@
             var unavailable = new Set();
             events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
             body.innerHTML=''; renderCalendar(body, unavailable); renderReservationsList(body, unavailable); status.textContent = labels.updated;
-            var listingUrl = cfg && (cfg.airbnb_url || cfg.airbnb) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
+            var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU';
+            var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
+            try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = '📍 Réserver via Airbnb (bientôt)'; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
             link.appendChild(a); node.appendChild(link);
           }).catch(function(e){
             node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
