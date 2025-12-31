@@ -96,6 +96,19 @@ git push origin main
 ```bash
 git add --all && git commit -m "Modification" || echo 'No changes to commit' && git push origin main
 ```
+ 
+## Commit Checklist (préconisations automatisées)
+
+Avant chaque commit, respecter la checklist ci-dessous :
+
+- [ ] No server mode — tester via push sur GitHub Pages si le site est statique
+- [ ] Pas de nouveaux `console.log` / instructions de debug dans le code
+- [ ] Mettre à jour `README.md` et `RELEASE.md` pour toute *nouvelle fonctionnalité* (pas pour un fix)
+- [ ] Mettre à jour `REPOSITORY.md` pour lister tout fichier ajouté pertinent
+- [ ] Le message de commit suit la convention du projet (clair et descriptif)
+
+Ces recommandations sont destinées à être affichées localement avant la confirmation d'un commit afin d'éviter les oublis courants.
+
 ## Contact
 
 **Propriétaire** : Max Poirette  
