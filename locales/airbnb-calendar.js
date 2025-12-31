@@ -243,4 +243,21 @@
 
   // auto-run on DOM ready — call mountAll without passing the event object
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ mountAll(); }); else mountAll();
+
+  // observe DOM mutations so dynamic injections (language switches) retrigger initialization
+  try{
+    var __airbnbMo = new MutationObserver(function(muts){
+      var found = false;
+      muts.forEach(function(m){
+        Array.prototype.forEach.call(m.addedNodes||[], function(n){
+          if(!n) return;
+          if(n.nodeType===1){
+            if((n.classList && n.classList.contains && n.classList.contains('airbnb-calendar')) || (n.querySelector && n.querySelector('.airbnb-calendar'))){ found = true; }
+          }
+        });
+      });
+      if(found){ try{ mountAll(); }catch(e){} }
+    });
+    __airbnbMo.observe(document.body || document.documentElement, { childList: true, subtree: true });
+  }catch(e){}
 })();
