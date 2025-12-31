@@ -9,7 +9,14 @@
     "ESPACES": "photos/piscine-ext.jpg",
     "SECURITE": "photos/piscine-ext.jpg"
   },
-  "airbnb_text": "📍 Réserver via Airbnb (bientôt)",
+  "airbnb_text": "📍 Réserver via Airbnb",
+  "airbnb_texts": {
+    "fr": "📍 Réserver dans Airbnb",
+    "en": "📍 Book on Airbnb",
+    "es": "📍 Reservar en Airbnb",
+    "nl": "📍 Boeken op Airbnb",
+    "de": "📍 Auf Airbnb buchen"
+  },
   "airbnb_url": "https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU",
   "year": "2025",
   "airbnb_ical": "/locales/airbnb.ics",
@@ -25,7 +32,7 @@
       "view_listing": "Voir l'annonce Airbnb",
       "error_fetch": "Impossible de charger le calendrier.",
       "refreshing": "Actualisation…",
-      "updated": "Actualisé",
+      "updated": "Sélection du mois",
       "refresh_error": "Erreur d'actualisation",
       "no_ical": "Aucun calendrier configuré."
     },
@@ -37,7 +44,7 @@
       "view_listing": "View listing on Airbnb",
       "error_fetch": "Unable to load calendar.",
       "refreshing": "Refreshing…",
-      "updated": "Updated",
+      "updated": "Sélection du mois",
       "refresh_error": "Refresh error",
       "no_ical": "No calendar configured."
     },
@@ -49,7 +56,7 @@
       "view_listing": "Ver anuncio en Airbnb",
       "error_fetch": "No se puede cargar el calendario.",
       "refreshing": "Actualizando…",
-      "updated": "Actualizado",
+      "updated": "Sélection du mois",
       "refresh_error": "Error de actualización",
       "no_ical": "Ningún calendario configurado."
     },
@@ -61,7 +68,7 @@
       "view_listing": "Bekijk advertentie op Airbnb",
       "error_fetch": "Kan kalender niet laden.",
       "refreshing": "Actualiseren…",
-      "updated": "Bijgewerkt",
+      "updated": "Sélection du mois",
       "refresh_error": "Fout bij actualisatie",
       "no_ical": "Geen kalender geconfigureerd."
     },
@@ -73,7 +80,7 @@
       "view_listing": "Eintrag auf Airbnb ansehen",
       "error_fetch": "Kalender konnte nicht geladen werden.",
       "refreshing": "Aktualisiere…",
-      "updated": "Aktualisiert",
+      "updated": "Sélection du mois",
       "refresh_error": "Aktualisierungsfehler",
       "no_ical": "Kein Kalender konfiguriert."
     }
