@@ -251,7 +251,7 @@
           var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
           try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
           link.appendChild(a); node.appendChild(link);
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
@@ -269,7 +269,7 @@
             var buttonText = (cfg && (cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb (bientôt)';
             try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.style.cssText='display:inline-block;padding:0.5rem 0.8rem;background:#ff5a5f;color:#fff;border-radius:6px;text-decoration:none';
+            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
             link.appendChild(a); node.appendChild(link);
           }).catch(function(e){
             node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
