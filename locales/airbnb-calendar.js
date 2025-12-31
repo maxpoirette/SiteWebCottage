@@ -11,28 +11,44 @@
   function fetchSiteVars(){ return fetch(new URL('site-vars.json', base).href).then(function(r){ if(!r.ok) throw new Error('no cfg'); return r.json(); }); }
 
   function parseICal(text){
-    var lines = text.split(/\r?\n/);
+    // unfold folded lines (lines starting with space or tab continue previous line)
+    var raw = text.split(/\r?\n/);
+    var lines = [];
+    for(var i=0;i<raw.length;i++){
+      var ln = raw[i];
+      if((ln.charAt(0) === ' ' || ln.charAt(0) === '\t') && lines.length){
+        lines[lines.length-1] += ln.slice(1);
+      } else {
+        lines.push(ln);
+      }
+    }
     var events = [];
     var cur = null;
     for(var i=0;i<lines.length;i++){
       var l = lines[i];
-      if(/^BEGIN:VEVENT/.test(l)){ cur = {}; continue; }
-      if(/^END:VEVENT/.test(l)){ if(cur) events.push(cur); cur=null; continue; }
+      if(/^BEGIN:VEVENT/i.test(l)){ cur = {}; continue; }
+      if(/^END:VEVENT/i.test(l)){ if(cur) events.push(cur); cur=null; continue; }
       if(!cur) continue;
-      var m = l.match(/^([A-Z]+):(.+)$/);
-      if(m){ cur[m[1]] = (cur[m[1]]||'') + m[2]; }
+      // capture property name (allow parameters after a semicolon) and value after ':'
+      var m = l.match(/^([A-Z0-9-]+)(?:;[^:]*)?:(.*)$/i);
+      if(m){
+        var key = m[1].toUpperCase();
+        var val = m[2] || '';
+        cur[key] = (cur[key]||'') + val;
+      }
     }
     return events.map(function(e){
       // support DTSTART and DTEND formats YYYYMMDD or YYYYMMDDTHHMMSSZ
       function toDate(s){ try{
           if(!s) return null;
+          s = (''+s).trim();
           // remove timezone suffix Z
           if(/T/.test(s)){
             // try ISO
             var iso = s.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){ return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z'; });
             return new Date(iso);
           }
-          // date only
+          // date only (VALUE=DATE) format
           return new Date(s.substr(0,4)+'-'+s.substr(4,2)+'-'+s.substr(6,2)+'T00:00:00Z');
         }catch(e){ return null; }}
       var start = toDate(e.DTSTART);
