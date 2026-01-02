@@ -229,11 +229,16 @@
 
           // add booking button (uses configured URL if present, else default listing)
           var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
-          var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb';
+          var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb Direct';
           try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
           link.appendChild(a); node.appendChild(link);
+          // Attempt to load per-language labels from locales/labels/{lang}.json and update button text if present
+          try{
+            var lblUrl = new URL('labels/' + encodeURIComponent(lang) + '.json', base).href;
+            fetch(lblUrl, { cache: 'no-cache' }).then(function(r){ if(!r.ok) return null; return r.json(); }).then(function(L){ if(!L) return; try{ var txt = (typeof L.airbnb_texts === 'object' ? (L.airbnb_texts && L.airbnb_texts[lang]) : (L.airbnb_texts || L.airbnb_text)); if(txt) a.textContent = txt; }catch(e){} }).catch(function(){/* ignore */});
+          }catch(e){}
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
           // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
@@ -247,7 +252,7 @@
             events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
             body.innerHTML=''; renderCalendar(body, unavailable); status.textContent = labels.updated;
             var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
-            var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb';
+            var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb Direct 2';
             try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
             var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
