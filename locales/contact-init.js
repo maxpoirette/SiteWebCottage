@@ -19,32 +19,60 @@
   // cache for fetched config so later DOM changes can re-use it
   var __contact_cfg_cache = null;
   // localized strings (defaults in French)
-  var loc = {
-    title: 'Merci !',
-    message: 'Votre message a bien été envoyé — nous vous répondrons bientôt.',
+      try{
+        // prefer relocated labels path: locales/labels/merci_{lang}.json
+        var merciUrl = new URL('labels/merci_' + (lang||'fr') + '.json', base).href;
+        fetch(merciUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('merci json not found'); }).then(function(m){
     close: 'Fermer',
     imgAlt: 'Les Cottages du Lac'
   };
 
   // detect current page language in a robust way (checks localStorage, selector, html lang, visible fragments)
   function detectPageLang(){
-    try{
+        }).catch(function(){
+          // fallback: try old location (locales/merci_{lang}.json) for backwards compatibility
+          try{
+            var oldUrl = new URL('merci_' + (lang||'fr') + '.json', base).href;
+            fetch(oldUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('old merci json not found'); }).then(function(m2){
+              loc.title = m2.title || loc.title;
+              loc.message = m2.message || loc.message;
+              loc.close = m2.close || loc.close;
+              loc.imgAlt = m2.imgAlt || loc.imgAlt;
+              updateModalContent();
+              resolve();
+            }).catch(function(){
+              // fallback to site-vars.json thanks if present
+              try{
+                if(__contact_cfg_cache && __contact_cfg_cache.thanks){
+                  var entry = __contact_cfg_cache.thanks[lang] || __contact_cfg_cache.thanks[lang && lang.toLowerCase()];
+                  if(entry){
+                    loc.title = entry.title || loc.title;
+                    loc.message = entry.message || loc.message;
+                    loc.close = entry.close || loc.close;
+                    loc.imgAlt = entry.imgAlt || loc.imgAlt;
+                  }
+                }
+              }catch(e){}
+              updateModalContent();
+              resolve();
+            });
+          }catch(e){
+            try{
+              if(__contact_cfg_cache && __contact_cfg_cache.thanks){
+                var entry2 = __contact_cfg_cache.thanks[lang] || __contact_cfg_cache.thanks[lang && lang.toLowerCase()];
+                if(entry2){
+                  loc.title = entry2.title || loc.title;
+                  loc.message = entry2.message || loc.message;
+                  loc.close = entry2.close || loc.close;
+                  loc.imgAlt = entry2.imgAlt || loc.imgAlt;
+                }
+              }
+            }catch(e){}
+            updateModalContent();
+            resolve();
+          }
       try{ var ls = localStorage.getItem('site-lang'); if(ls) return (ls||'').substring(0,2); }catch(e){}
       try{ var sel = document.getElementById('languageSelect'); if(sel && sel.value) return (sel.value||'').substring(0,2); }catch(e){}
-      if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
-      var nodes = document.querySelectorAll('.lang-content[data-lang]');
-      for(var i=0;i<nodes.length;i++){ var el = nodes[i]; var s = window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
-      var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
-    }catch(e){}
-    return 'fr';
-  }
-
-  // load merci_{lang}.json and apply to `loc` (returns a Promise)
-  function loadMerciForLang(lang){
-    return new Promise(function(resolve){
-      try{
-        var merciUrl = new URL('merci_' + (lang||'fr') + '.json', base).href;
-        fetch(merciUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('merci json not found'); }).then(function(m){
           loc.title = m.title || loc.title;
           loc.message = m.message || loc.message;
           loc.close = m.close || loc.close;
