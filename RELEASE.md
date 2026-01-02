@@ -38,3 +38,41 @@ Crédits
 
 - Auteur : Maxime Poirette
 - Date : 2025-12-28
+
+# Release — 2026-01-02 (v2026.01.02)
+
+Résumé : i18n, SEO et amélioration du rendu du calendrier (ICS). Préparations pour déploiement sur le domaine canonique cottage13-domaine-du-lac.com.
+
+Principaux changements
+
+- Internationalisation & SEO
+  - Externalisation des titres/descriptions SEO vers locales/labels/{fr,en,es,nl,de}.json.
+  - index.html : loader asynchrone qui charge locales/labels/{lang}.json et met à jour document.title et meta[name=description] (cache en mémoire).
+  - Ajout des balises canonical / hreflang et d'un JSON-LD LodgingBusiness minimal.
+  - sitemap.xml ajouté à la racine et commité pour soumission à Google Search Console.
+
+- Calendar & Airbnb integration
+  - locales/airbnb-calendar.js : parsing iCal amélioré, résolution correcte des URLs .ics pour GitHub Pages, MutationObserver pour ré-initialiser après changement de langue.
+  - UI : suppression de la liste "Périodes réservées", amélioration du sélecteur mois/année, affichage sur 3 mois centrés, corrections calcul nuits (DTEND exclusif).
+  - Booking button : textes traduits par langue via airbnb_texts et bouton stylé via .airbnb-link. Suppression des boutons Airbnb dans la zone contact.
+
+- Repository & documentation
+  - Ajout de locales/labels/*.json, locales/i18n-extract-plan.md, locales/seo-meta-suggestions.md et mise à jour de README.md (section SEO / Indexation).
+  - Ajout de sitemap.xml et autres notes pour la soumission au Search Console.
+
+Notes de migration / tests
+
+- Vérifier après déploiement sur https://cottage13-domaine-du-lac.com :
+  - que sitemap.xml est accessible et soumis à Search Console;
+  - que les balises canonical / hreflang sont correctes ;
+  - que le calendrier charge l'ICS (200) et s'affiche pour chaque langue (changer la langue et recharger si nécessaire).
+
+Prochaines étapes recommandées
+
+- Générer des pages statiques par langue (index.fr.html, index.en.html, ...) si tu veux une indexation serveur-side par langue (je peux automatiser cela).
+- Ajouter offers / aggregateRating au JSON-LD quand les prix/avis sont disponibles.
+
+Crédits
+
+- Auteur : Maxime Poirette
+- Date : 2026-01-02
