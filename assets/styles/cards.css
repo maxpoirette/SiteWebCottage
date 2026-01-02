@@ -21,3 +21,7 @@
 .map-card{margin:0}
 .map-card .map-caption{font-size:0.9rem;color:#555;text-align:center;margin-top:0.5rem}
 .map-card iframe{border-radius:6px}
+
+/* Calendar contact link styling */
+.calendar-contact a{color:#2d7a4f;font-weight:600;text-decoration:none}
+.calendar-contact a:hover,.calendar-contact a:focus{color:#235c3f;text-decoration:underline}
