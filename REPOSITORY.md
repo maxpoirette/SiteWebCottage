@@ -28,7 +28,6 @@ Ce document présente l'arborescence principale du projet et une courte descript
 - `airbnb-calendar.js` — Parser iCal et rendu calendrier (disponibilités).
 - `airbnb.ics` — Fichier iCal local utilisé pour tests hors-serveur (optionnel).
 - `labels/` — Titres/descriptions SEO et labels par langue (chargés dynamiquement) : `fr.json`, `en.json`, `es.json`, `nl.json`, `de.json`.
-- `i18n-extract-plan.md` — Plan de migration des chaînes i18n.
 - `seo-meta-suggestions.md` — Recommandations SEO pour les métadonnées par langue.
 - `todo.json` — Notes et tâches liées aux localisations.
 
