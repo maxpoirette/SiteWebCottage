@@ -16,3 +16,8 @@
 .card img{display:block;width:100%;height:auto;border-radius:8px;margin-bottom:0.75rem}
 .card-icon{font-size:1.6rem;margin-bottom:0.5rem}
 .card h3{margin:0 0 0.5rem}
+
+/* Map card caption */
+.map-card{margin:0}
+.map-card .map-caption{font-size:0.9rem;color:#555;text-align:center;margin-top:0.5rem}
+.map-card iframe{border-radius:6px}
