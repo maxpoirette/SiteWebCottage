@@ -109,6 +109,19 @@ Avant chaque commit, respecter la checklist ci-dessous :
 
 Ces recommandations sont destinées à être affichées localement avant la confirmation d'un commit afin d'éviter les oublis courants.
 
+## SEO / Indexation (résumé rapide)
+
+Pour assurer une bonne indexation par Google une fois le site déployé sur `cottage13-domaine-du-lac.com`, voici les actions prioritaires :
+
+- **Domaine canonique & HTTPS** : vérifier la configuration DNS (CNAME/A) et activer TLS/SSL pour `https://cottage13-domaine-du-lac.com`.
+- **Sitemap** : soumettre `https://cottage13-domaine-du-lac.com/sitemap.xml` dans Google Search Console après déploiement.
+- **Hreflang / Canonical** : les balises `hreflang` et `canonical` sont présentes dans `index.html` — vérifie les URLs si tu sers des pages séparées par langue.
+- **Meta / Titles** : les titres et descriptions SEO sont externalisés dans `locales/labels/{lang}.json` et chargés dynamiquement ; garder une meta description de fallback dans le `<head>` est recommandé.
+- **Robots.txt** : ne pas bloquer l'accès aux crawlers ; ajoute un `robots.txt` permissif avec le lien vers le sitemap si nécessaire.
+- **Structured data** : ajouter/compléter `offers` et `aggregateRating` dans le JSON-LD lorsque tu as des prix/avis pour bénéficier d'un affichage enrichi.
+
+Vérifications rapides après déploiement : hard-refresh, soumettre le sitemap à Search Console, demander l'indexation des pages prioritaires et surveiller la couverture (Coverage) pour corriger les erreurs éventuelles.
+
 ## Contact
 
 **Propriétaire** : Max Poirette  
