@@ -359,9 +359,20 @@
               html = html.replace(token, siteVars.images[k]);
             });
           }
-          if(siteVars.airbnb_text){
-            html = html.replace(/{{AIRBNB_TEXT}}/g, siteVars.airbnb_text);
-          }
+                    try{
+                        // Prefer per-language label translations from locales/labels/{lang}.json
+                        var labels = (window.__SEO_LABELS_CACHE__ && window.__SEO_LABELS_CACHE__[lang]) || null;
+                        if(!labels){
+                            try{
+                                var rl = await fetch('./locales/labels/' + encodeURIComponent(lang) + '.json', {cache: 'no-cache'});
+                                if(rl.ok){ labels = await rl.json(); window.__SEO_LABELS_CACHE__ = window.__SEO_LABELS_CACHE__ || {}; window.__SEO_LABELS_CACHE__[lang] = labels; }
+                            }catch(e){}
+                        }
+                        var airbnbText = '';
+                        if(labels){ airbnbText = labels.airbnb_texts || labels.airbnb_text || ''; }
+                        if(!airbnbText && siteVars && siteVars.airbnb_text) airbnbText = siteVars.airbnb_text;
+                        html = html.replace(/{{AIRBNB_TEXT}}/g, airbnbText);
+                    }catch(e){ /* ignore replacement errors */ }
           html = html.replace(/{{YEAR}}/g, (siteVars.year || new Date().getFullYear()));
 
                     // Replace any other simple string tokens from site-vars.json (e.g. MAP_*, AIRBNB_URL, etc.)
