@@ -364,6 +364,19 @@
           }
           html = html.replace(/{{YEAR}}/g, (siteVars.year || new Date().getFullYear()));
 
+                    // Replace any other simple string tokens from site-vars.json (e.g. MAP_*, AIRBNB_URL, etc.)
+                    try{
+                        Object.keys(siteVars).forEach(k => {
+                            try{
+                                var v = siteVars[k];
+                                if(typeof v === 'string'){
+                                    var token = new RegExp('{{' + k + '}}', 'g');
+                                    html = html.replace(token, v);
+                                }
+                            }catch(e){}
+                        });
+                    }catch(e){}
+
                     if(!root){
                         console.error('Lang root element (#langRoot) introuvable — abandon du rendu.');
                         return;
