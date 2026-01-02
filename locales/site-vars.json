@@ -9,14 +9,6 @@
     "ESPACES": "photos/piscine-ext.jpg",
     "SECURITE": "photos/piscine-ext.jpg"
   },
-  "airbnb_text": "📍 Réserver via Airbnb",
-  "airbnb_texts": {
-    "fr": "📍 Réserver dans Airbnb",
-    "en": "📍 Book on Airbnb",
-    "es": "📍 Reservar en Airbnb",
-    "nl": "📍 Boeken op Airbnb",
-    "de": "📍 Auf Airbnb buchen"
-  },
   "airbnb_url": "https://www.airbnb.fr/rooms/43505513?photo_id=2089879286&source_impression_id=p3_1767171138_P3uO-Y6XhOoMhNhU",
   "year": "2026",
   "airbnb_ical": "/locales/airbnb.ics",
