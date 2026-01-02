@@ -43,7 +43,7 @@
   function loadMerciForLang(lang){
     return new Promise(function(resolve){
       try{
-        var merciUrl = new URL('merci_' + (lang||'fr') + '.json', base).href;
+        var merciUrl = new URL('merci2_' + (lang||'fr') + '.json', base).href;
         fetch(merciUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('merci json not found'); }).then(function(m){
           loc.title = m.title || loc.title;
           loc.message = m.message || loc.message;
@@ -245,7 +245,7 @@
             var resolved = new URL(inp.value, base).href;
             // If the _next points to an old merci_*.html, map it to our minimal merci.html
             try{
-              var m = (inp.value || '').match(/merci[_-]?([a-z]{2})/i);
+              var m = (inp.value || '').match(/merci2[_-]?([a-z]{2})/i);
               if(m && m[1]){
                 resolved = new URL('locales/labels/merci.html', base).href;
               }
