@@ -43,7 +43,7 @@
   function loadMerciForLang(lang){
     return new Promise(function(resolve){
       try{
-        var merciUrl = new URL('merci2_' + (lang||'fr') + '.json', base).href;
+        var merciUrl = new URL('merci_' + (lang||'fr') + '.json', base).href;
         fetch(merciUrl).then(function(r){ if(r.ok) return r.json(); throw new Error('merci json not found'); }).then(function(m){
           loc.title = m.title || loc.title;
           loc.message = m.message || loc.message;
@@ -222,7 +222,7 @@
   function absolutizeNexts(){
     function siteBase(){
       var p = location.pathname || '/';
-      var idx = p.indexOf('/locales/labels/');
+      var idx = p.indexOf('/locales/');
       if(idx !== -1){
         return location.origin + p.slice(0, idx) + '/';
       }
@@ -245,9 +245,9 @@
             var resolved = new URL(inp.value, base).href;
             // If the _next points to an old merci_*.html, map it to our minimal merci.html
             try{
-              var m = (inp.value || '').match(/merci2[_-]?([a-z]{2})/i);
+              var m = (inp.value || '').match(/merci[_-]?([a-z]{2})/i);
               if(m && m[1]){
-                resolved = new URL('locales/labels/merci.html', base).href;
+                resolved = new URL('locales/merci.html', base).href;
               }
             }catch(e){}
             // If somebody configured _next to point at a full locale page (e.g. /locales/de.html)
@@ -257,7 +257,7 @@
             try{
               var p = new URL(resolved).pathname || '';
               if(/\/locales\/.+\.html$/.test(p) && !p.endsWith('/merci.html')){
-                resolved = new URL('locales/labels/merci.html', base).href;
+                resolved = new URL('locales/merci.html', base).href;
               }
             }catch(e){}
             inp.value = resolved;
