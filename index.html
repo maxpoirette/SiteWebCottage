@@ -11,13 +11,13 @@
         <link rel="alternate" hreflang="es" href="https://cottage13-domaine-du-lac.com/?lang=es" />
         <link rel="alternate" hreflang="nl" href="https://cottage13-domaine-du-lac.com/?lang=nl" />
         <link rel="alternate" hreflang="de" href="https://cottage13-domaine-du-lac.com/?lang=de" />
-        <meta name="description" content="Séjournez au Cottage 13, location familiale proche du lac de Parentis-en-Born et de la plage à Biscarrosse (Landes). 2 chambres, piscine, parking. Réservez sur cottage13-domaine-du-lac.com." />
+        <meta name="description" content="Séjournez au Cottage 13 près du lac de Parentis-en-Born (Biscarrosse) — 2 chambres, piscine, parking. / Stay at Cottage 13 near Parentis-en-Born lake (Biscarrosse) — 2 bedrooms, pool, parking. Réservez via cottage13-domaine-du-lac.com." />
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "LodgingBusiness",
             "name": "Cottage 13",
-            "description": "Location de vacances proche du lac et de la plage à Biscarrosse (Landes).",
+            "description": "Location de vacances proche du lac et de la plage à Biscarrosse (Landes). / Holiday rental near the Parentis-en-Born lake and beach in Biscarrosse (Landes).",
             "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Biscarrosse",
@@ -300,6 +300,40 @@
       const select = document.getElementById('languageSelect');
       const root = document.getElementById('langRoot');
       let siteVars = {};
+            // Update SEO meta by loading per-language labels file from locales/labels/{lang}.json
+            // This keeps translations out of index.html and allows editing labels per-language.
+            async function updateSEOMeta(lang){
+                try{
+                    window.__SEO_LABELS_CACHE__ = window.__SEO_LABELS_CACHE__ || {};
+                    if(window.__SEO_LABELS_CACHE__[lang]){
+                        var cached = window.__SEO_LABELS_CACHE__[lang];
+                        if(cached.title) document.title = cached.title;
+                        var mm = document.querySelector('meta[name="description"]');
+                        if(mm) mm.setAttribute('content', cached.description || '');
+                        return;
+                    }
+                    var url = './locales/labels/' + encodeURIComponent(lang) + '.json';
+                    try{
+                        var r = await fetch(url, {cache: 'no-cache'});
+                        if(r.ok){
+                            var j = await r.json();
+                            window.__SEO_LABELS_CACHE__[lang] = j;
+                            if(j.title) document.title = j.title;
+                            var m = document.querySelector('meta[name="description"]');
+                            if(m) m.setAttribute('content', j.description || '');
+                            else { var nm = document.createElement('meta'); nm.name='description'; nm.content = j.description || ''; document.head.appendChild(nm); }
+                            return;
+                        }
+                    }catch(e){/* fetch failed, fallback below */}
+                    // fallback: attempt to use siteVars (if loaded) or keep existing meta
+                    try{
+                        if(window.__SITE_VARS_GLOBAL__ && window.__SITE_VARS_GLOBAL__.calendar_labels && window.__SITE_VARS_GLOBAL__.calendar_labels[lang]){
+                            var s = window.__SITE_VARS_GLOBAL__.calendar_labels[lang];
+                            if(s && s.updated) document.title = s.updated;
+                        }
+                    }catch(e){}
+                }catch(e){ console.warn('updateSEOMeta error', e); }
+            }
 
             async function loadSiteVars(){
                 try{
@@ -378,18 +412,21 @@
       // init
       (async ()=>{
         await loadSiteVars();
-        const initial = localStorage.getItem('site-lang') || 'fr';
-        select.value = initial;
-        await loadLocale(initial);
+                const initial = localStorage.getItem('site-lang') || 'fr';
+                select.value = initial;
+                // update SEO meta for initial language, then load locale
+                try{ updateSEOMeta(initial); }catch(e){}
+                await loadLocale(initial);
       })();
 
             // changement de langue — revenir à l'accueil (`#bienvenue`) avant de charger la locale
-            select.addEventListener('change', e => {
+            select.addEventListener('change', async e => {
                 const lang = e.target.value;
                 localStorage.setItem('site-lang', lang);
                 // remplacer l'ancre actuelle sans ajouter une entrée d'historique
                 history.replaceState(null, '', '#bienvenue');
-                loadLocale(lang);
+                try{ updateSEOMeta(lang); }catch(e){}
+                await loadLocale(lang);
             });
 
       // intercepter les ancres internes
