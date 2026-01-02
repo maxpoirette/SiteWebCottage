@@ -8,7 +8,7 @@ Pages ciblées
 
 1) Homepage (EN)
 - Title: Cottage 13 — Holiday rental by the lake in Biscarross (Parentis-en-Born), Landes
-- Meta description: Stay at Cottage 13, a family-friendly holiday rental near the Parentis-en-Born's lake and the beach in Biscarrosse (Landes, France). 2 bedrooms, pool, parking. Book directly since cottage13-domaine-du-lac.com.
+- Meta description: Stay at Cottage 13, a family-friendly holiday rental near the Parentis-en-Born lake and the beach in Biscarrosse (Landes, France). 2 bedrooms, pool, parking. Book directly since cottage13-domaine-du-lac.com.
 
 2) Réservation / Availability section (FR)
 - Title: Réservation — Cottage 13 (Parentis-en-Born, Biscarrosse, Landes)
