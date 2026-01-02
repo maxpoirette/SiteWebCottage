@@ -142,9 +142,17 @@
         return 'fr';
       }
       var lang = (detectLang() || 'fr').toLowerCase();
-      var labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
-        loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Sectionner la période', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
-      };
+      var labels = null;
+      try{
+        if(window.__SEO_LABELS_CACHE__ && window.__SEO_LABELS_CACHE__[lang] && window.__SEO_LABELS_CACHE__[lang].calendar_labels){
+          labels = window.__SEO_LABELS_CACHE__[lang].calendar_labels;
+        }
+      }catch(e){}
+      if(!labels){
+        labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
+          loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Sectionner la période', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
+        };
+      }
       var nodes = document.querySelectorAll('.airbnb-calendar');
       if(!nodes || nodes.length===0){
         console.warn('airbnb-calendar: no .airbnb-calendar nodes found');
