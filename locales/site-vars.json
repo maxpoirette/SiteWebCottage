@@ -25,6 +25,8 @@
   "MAP_LANDES": "https://www.google.com/maps/embed/v1/place?key=AIzaSyB2NIWI3Tv9iDPrlnowr_0ZqZWoAQydKJU&q=Landes%2C%20France&maptype=roadmap",
   "MAP_LAC": "https://www.google.com/maps/embed/v1/place?key=AIzaSyB2NIWI3Tv9iDPrlnowr_0ZqZWoAQydKJU&q=%C3%89tang%20de%20Biscarrosse%20et%20de%20Parentis%2C%20Biscarrosse%2C%20France&maptype=roadmap",
   "MAP_ENTREE": "https://www.google.com/maps/embed/v1/place?key=AIzaSyB2NIWI3Tv9iDPrlnowr_0ZqZWoAQydKJU&q=les%20cottages%20du%20lac&maptype=roadmap",
+  "CONTACT_URL_FR": "http://www.lescottagesdulac.fr/fr/",
+  "CONTACT_URL_EN": "http://www.lescottagesdulac.fr/en/",
 
   "calendar_labels": {
     "fr": {
