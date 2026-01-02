@@ -25,3 +25,6 @@
 /* Calendar contact link styling */
 .calendar-contact a{color:#2d7a4f;font-weight:600;text-decoration:none}
 .calendar-contact a:hover,.calendar-contact a:focus{color:#235c3f;text-decoration:underline}
+
+/* Add 1cm vertical gap between a grid of cards and a following single card (e.g. equipment card) */
+.content-grid + .card{ margin-top: 1cm; }
