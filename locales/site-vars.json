@@ -23,9 +23,9 @@
   "airbnb_ics_proxy": "",
   "contact_email": "max.poirette@gmail.com"
 
-  ,"MAP_LANDES": "https://www.google.com/maps?q=https%3A%2F%2Fwww.google.com%2Fmaps%2Fplace%2FLandes%2F%4044.007994%2C-1.357615%2C9z%2Fdata%3D%213m1%214b1%214m6%213m5%211s0xd543137a5ae9f13%3A0x306651748112800%218m2%213d43.9412045%214d-0.7532809%2116zL20vMG1kMHE%3Fcoh%3D277534%26entry%3Dtts%26g_ep%3DEgoyMDI1MTIwOS4wIPu8ASoKLDEwMDc5MjA3MUgBUAM%253D%26skid%3D9643e471-d0fe-4649-89ae-58d5dbaf0a52&output=embed",
-  "MAP_LAC": "https://www.google.com/maps?q=https%3A%2F%2Fwww.google.com%2Fmaps%2Fplace%2FPlage%2BMouteou%2BPipiou%2B%28Parentis%29%2F%4044.3443131%2C-1.2111034%2C12.81z%2Fdata%3D%214m7%213m6%211s0xd547c58c3165499%3A0x5e02474dca23e9e6%218m2%213d44.3463998%214d-1.1036998%2115sChdsYWMgZGUgcGFyZW50aXMgZW4gYm9ybloZIhdsYWMgZGUgcGFyZW50aXMgZW4gYm9ybpIBDXN3aW1taW5nX2xha2WaAURDaTlEUVVsUlFVTnZaRU5vZEhsalJqbHZUMnBPTUZJemJFWlBSR2hwVG01S2RGVnJWalZWVjNCd1pHcHNXbVZyUlJBAgBqKgE&output=embed",
-  "MAP_ENTREE": "https://www.google.com/maps?q=https%3A%2F%2Fwww.google.com%2Fmaps%2Fplace%2FLes%2BCottages%2BDu%2BLac%2F%4044.3499135%2C-1.1036165%2C17z%2Fdata%3D%214m9%213m8%211s0xd547c50b602bd9f%3A0x8191aee7b915460f%215m2%214m1%211i2%218m2%213d44.3499135%214d-1.1010416%2116s%252Fg%252F1tl_0htm%3Fcoh%3D277534%26entry%3Dtts%26g_ep%3DEgoyMDI1MTIwOS4wIPu8ASoKLDEwMDc5MjA3MUgBUAM%253D%26skid%3D76b67d2e-a01f-4415-a251-f3b0fbfad60f&output=embed",
+  ,"MAP_LANDES": "https://maps.app.goo.gl/VbLicv9E8m6tgpK29",
+  "MAP_LAC": "https://maps.app.goo.gl/Se3KoqtVh38QgsVM6",
+  "MAP_ENTREE": "https://maps.app.goo.gl/NYrxEwTgpVxqhGbE9",
 
   "calendar_labels": {
     "fr": {
