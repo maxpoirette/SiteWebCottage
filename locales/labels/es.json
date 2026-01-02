@@ -1,5 +1,17 @@
 {
   "title": "Cottage 13 — Alquiler vacacional junto al lago en Biscarrosse (Parentis-en-Born), Landes",
   "description": "Alójate en Cottage 13, alquiler vacacional familiar cerca del lago Parentis-en-Born y la playa en Biscarrosse (Landes). 2 habitaciones, piscina, parking. Reserva en cottage13-domaine-du-lac.com.",
-  "airbnb_text": "📍 Reservar en Airbnb"
+  "airbnb_text": "📍 Reservar en Airbnb",
+  "calendar_labels": {
+    "loading": "Cargando calendario…",
+    "refresh": "Actualizar",
+    "no_reservations": "No hay reservas para mostrar.",
+    "reserved_title": "Períodos reservados",
+    "view_listing": "Ver anuncio en Airbnb",
+    "error_fetch": "No se puede cargar el calendario.",
+    "refreshing": "Actualizando…",
+    "updated": "Seleccionar mes",
+    "refresh_error": "Error de actualización",
+    "no_ical": "Ningún calendario configurado."
+  }
 }
