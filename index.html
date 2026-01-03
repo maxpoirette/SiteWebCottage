@@ -310,6 +310,8 @@
             .side-drawer.open{ transform:translateX(0); }
             .side-drawer nav{ background:transparent; box-shadow:none; padding:0 }
             .side-drawer nav ul{ display:block !important; gap:0; }
+            .side-drawer nav a{ color:#2d7a4f !important; display:block; padding:8px 0; font-size:1.05rem; text-decoration:none; }
+            .side-drawer nav a:hover{ color:#1e5738 !important; text-decoration:underline }
             .side-drawer nav li{ margin:0 0 12px }
             .side-drawer .close-drawer{ position:absolute; right:8px; top:8px; background:transparent;border:none;font-size:1.2rem;cursor:pointer }
             /* keep language selector visible on top-right */
@@ -508,31 +510,34 @@
             var initialized = false;
             function createBurgerAndDrawer(nav){
                 if(initialized) return; initialized = true;
-                // create burger button
+                // create burger button and drawer detached to minimize reflows
                 var btn = document.createElement('button'); btn.className = 'nav-burger'; btn.setAttribute('aria-label','Menu'); btn.type='button';
                 var bar = document.createElement('span'); bar.className='bar'; btn.appendChild(bar);
-                document.body.appendChild(btn);
 
-                // create drawer
                 var drawer = document.createElement('div'); drawer.className = 'side-drawer';
                 var closeBtn = document.createElement('button'); closeBtn.className='close-drawer'; closeBtn.innerHTML='✕'; closeBtn.setAttribute('aria-label','Fermer le menu'); drawer.appendChild(closeBtn);
-                // clone the nav content into drawer
-                try{
-                    var cloned = nav.cloneNode(true);
-                    drawer.appendChild(cloned);
-                }catch(e){ console.warn('Could not clone nav for drawer', e); }
-                document.body.appendChild(drawer);
 
-                function open(){ drawer.classList.add('open'); document.body.style.overflow='hidden'; }
-                function close(){ drawer.classList.remove('open'); document.body.style.overflow=''; }
+                // clone nav into a DocumentFragment to avoid incremental layout updates
+                try{
+                    var frag = document.createDocumentFragment();
+                    var cloned = nav.cloneNode(true);
+                    frag.appendChild(cloned);
+                    drawer.appendChild(frag);
+                }catch(e){ console.warn('Could not clone nav for drawer', e); }
+
+                // append both elements together
+                var wrap = document.createDocumentFragment(); wrap.appendChild(btn); wrap.appendChild(drawer); document.body.appendChild(wrap);
+
+                function open(){ drawer.classList.add('open'); try{ document.body.style.overflow='hidden'; }catch(e){} }
+                function close(){ drawer.classList.remove('open'); try{ document.body.style.overflow=''; }catch(e){} }
                 btn.addEventListener('click', function(){ open(); });
                 closeBtn.addEventListener('click', function(){ close(); });
-                // close when clicking outside
+                // close when clicking outside (on overlay area)
                 drawer.addEventListener('click', function(e){ if(e.target === drawer) close(); });
                 // close on Escape
                 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
                 // when a link inside drawer is clicked, close drawer
-                drawer.addEventListener('click', function(e){ var a = e.target.closest('a'); if(a) close(); });
+                drawer.addEventListener('click', function(e){ var a = e.target.closest && e.target.closest('a'); if(a) close(); });
             }
 
             // observe #langRoot for a nav element to appear
