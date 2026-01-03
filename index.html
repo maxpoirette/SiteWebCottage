@@ -509,9 +509,13 @@
         <script>
         // Mobile nav: create burger + side drawer when a nav is injected into #langRoot
         (function(){
+            // keep references so we can update drawer contents when the language changes
+            var drawerEl = null;
+            var btnEl = null;
+            var closeBtnEl = null;
             var initialized = false;
-            function createBurgerAndDrawer(nav){
-                if(initialized) return; initialized = true;
+
+            function buildElements(){
                 // create burger button and drawer detached to minimize reflows
                 var btn = document.createElement('button'); btn.className = 'nav-burger'; btn.setAttribute('aria-label','Menu'); btn.type='button';
                 var bar = document.createElement('span'); bar.className='bar'; btn.appendChild(bar);
@@ -519,41 +523,74 @@
                 var drawer = document.createElement('div'); drawer.className = 'side-drawer';
                 var closeBtn = document.createElement('button'); closeBtn.className='close-drawer'; closeBtn.innerHTML='✕'; closeBtn.setAttribute('aria-label','Fermer le menu'); drawer.appendChild(closeBtn);
 
-                // clone nav into a DocumentFragment to avoid incremental layout updates
+                return { btn: btn, drawer: drawer, closeBtn: closeBtn };
+            }
+
+            function setDrawerNav(drawer, nav){
+                // remove any previous nav inside drawer (preserve close button)
                 try{
+                    // find and remove existing nav elements
+                    var existing = drawer.querySelectorAll('nav');
+                    existing.forEach(function(el){ el.parentNode && el.parentNode.removeChild(el); });
                     var frag = document.createDocumentFragment();
                     var cloned = nav.cloneNode(true);
                     frag.appendChild(cloned);
                     drawer.appendChild(frag);
-                }catch(e){ console.warn('Could not clone nav for drawer', e); }
-
-                // append both elements together
-                var wrap = document.createDocumentFragment(); wrap.appendChild(btn); wrap.appendChild(drawer); document.body.appendChild(wrap);
-
-                function open(){
-                    requestAnimationFrame(function(){ drawer.classList.add('open'); document.body.classList.add('drawer-open'); });
-                }
-                function close(){
-                    requestAnimationFrame(function(){ drawer.classList.remove('open'); document.body.classList.remove('drawer-open'); });
-                }
-                btn.addEventListener('click', function(){ open(); });
-                closeBtn.addEventListener('click', function(){ close(); });
-                // close when clicking outside (on overlay area)
-                drawer.addEventListener('click', function(e){ if(e.target === drawer) close(); });
-                // close on Escape
-                document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
-                // when a link inside drawer is clicked, close drawer
-                drawer.addEventListener('click', function(e){ var a = e.target.closest && e.target.closest('a'); if(a) close(); });
+                }catch(e){ console.warn('Could not update drawer nav', e); }
             }
 
-            // observe #langRoot for a nav element to appear
+            function createBurgerAndDrawer(nav){
+                if(!nav) return;
+                if(!initialized){
+                    var parts = buildElements();
+                    btnEl = parts.btn; drawerEl = parts.drawer; closeBtnEl = parts.closeBtn;
+
+                    // insert cloned nav
+                    setDrawerNav(drawerEl, nav);
+
+                    // append both elements together
+                    var wrap = document.createDocumentFragment(); wrap.appendChild(btnEl); wrap.appendChild(drawerEl); document.body.appendChild(wrap);
+
+                    function open(){
+                        requestAnimationFrame(function(){ drawerEl.classList.add('open'); document.body.classList.add('drawer-open'); });
+                    }
+                    function close(){
+                        requestAnimationFrame(function(){ drawerEl.classList.remove('open'); document.body.classList.remove('drawer-open'); });
+                    }
+                    btnEl.addEventListener('click', function(){ open(); });
+                    closeBtnEl.addEventListener('click', function(){ close(); });
+                    // close when clicking outside (on overlay area)
+                    drawerEl.addEventListener('click', function(e){ if(e.target === drawerEl) close(); });
+                    // close on Escape
+                    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+                    // when a link inside drawer is clicked, close drawer
+                    drawerEl.addEventListener('click', function(e){ var a = e.target.closest && e.target.closest('a'); if(a) close(); });
+
+                    initialized = true;
+                }else{
+                    // already initialized: just update the drawer's nav to the new one
+                    setDrawerNav(drawerEl, nav);
+                }
+            }
+
+            // observe #langRoot for a nav element to appear / change
             var root = document.getElementById('langRoot');
             if(!root) return;
             var mo = new MutationObserver(function(muts){
                 muts.forEach(function(m){
                     Array.prototype.forEach.call(m.addedNodes||[], function(n){
-                        try{ if(n.nodeType===1){ var nav = n.querySelector && n.querySelector('nav'); if(nav) createBurgerAndDrawer(nav); if(n.matches && n.matches('nav')) createBurgerAndDrawer(n); } }catch(e){}
+                        try{
+                            if(n.nodeType===1){
+                                var nav = n.querySelector && n.querySelector('nav');
+                                if(nav) createBurgerAndDrawer(nav);
+                                if(n.matches && n.matches('nav')) createBurgerAndDrawer(n);
+                            }
+                        }catch(e){}
                     });
+                    // also handle replacedNodes or subtree mutations by scanning for nav
+                    try{
+                        var navs = root.querySelectorAll('nav'); if(navs && navs.length){ createBurgerAndDrawer(navs[0]); }
+                    }catch(e){}
                 });
             });
             mo.observe(root, { childList:true, subtree:true });
