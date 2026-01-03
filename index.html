@@ -317,6 +317,8 @@
             /* keep language selector visible on top-right */
             .language-selector{ right:12px; }
         }
+        /* when drawer is open, prevent body scroll via class to avoid style writes in JS */
+        body.drawer-open{ overflow: hidden; }
     </style>
 </head>
 <body>
@@ -528,8 +530,12 @@
                 // append both elements together
                 var wrap = document.createDocumentFragment(); wrap.appendChild(btn); wrap.appendChild(drawer); document.body.appendChild(wrap);
 
-                function open(){ drawer.classList.add('open'); try{ document.body.style.overflow='hidden'; }catch(e){} }
-                function close(){ drawer.classList.remove('open'); try{ document.body.style.overflow=''; }catch(e){} }
+                function open(){
+                    requestAnimationFrame(function(){ drawer.classList.add('open'); document.body.classList.add('drawer-open'); });
+                }
+                function close(){
+                    requestAnimationFrame(function(){ drawer.classList.remove('open'); document.body.classList.remove('drawer-open'); });
+                }
                 btn.addEventListener('click', function(){ open(); });
                 closeBtn.addEventListener('click', function(){ close(); });
                 // close when clicking outside (on overlay area)
