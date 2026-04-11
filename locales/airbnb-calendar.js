@@ -278,38 +278,8 @@
           }catch(e){}
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
-          // direct fetch failed (likely CORS). Try configured proxy (cfg.airbnb_ics_proxy) then localhost fallback
-          status.textContent = labels.refreshing;
-          var proxyBase = (cfg && (cfg.airbnb_ics_proxy || cfg.ics_proxy)) || 'http://localhost:8001/airbnb.ics?url=';
-          function buildProxyUrl(base, url){ try{ if(!base) return null; if(base.indexOf('{url}')!==-1) return base.replace('{url}', encodeURIComponent(url)); if(base.indexOf('?')!==-1 && base.indexOf('=')!==-1) return base + encodeURIComponent(url); return base + (base.endsWith('/')? '': '/') + '?url=' + encodeURIComponent(url); }catch(e){ return base + encodeURIComponent(url); } }
-          var proxy = buildProxyUrl(proxyBase, ical);
-          fetch(proxy).then(function(r){ if(!r.ok) throw new Error('proxy fetch failed'); return r.text(); }).then(function(txt){
-            var events = parseICal(txt);
-            var unavailable = new Set();
-            events.forEach(function(ev){ var s = ev.start; var e = ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
-            body.innerHTML=''; renderCalendar(body, unavailable); status.textContent = labels.updated;
-            var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
-            var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb Direct 2';
-            try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
-            var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-            var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
-            link.appendChild(a); node.appendChild(link);
-
-            // show last refresh time (fetch time), discreet italic under the calendar
-            try{
-              var refreshedAt = new Date();
-              var last = document.createElement('div');
-              last.style.textAlign = 'center';
-              last.style.marginTop = '6px';
-              last.style.color = '#666';
-              last.style.fontSize = '0.85rem';
-              last.style.fontStyle = 'italic';
-              last.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
-              node.appendChild(last);
-            }catch(e){}
-          }).catch(function(e){
-            node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
-          });
+          status.textContent = labels.error_fetch;
+          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
         });
       });
     }).catch(function(){
