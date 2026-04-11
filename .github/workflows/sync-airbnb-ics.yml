@@ -3,7 +3,7 @@ name: Sync Airbnb iCal
 on:
   workflow_dispatch:
   schedule:
-    # Every 6 hours
+    # Every 12 hours
     - cron: "0 */12 * * *"
 
 permissions:
