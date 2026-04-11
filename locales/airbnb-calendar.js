@@ -129,6 +129,21 @@
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
       var defaultIcal = cfg && (cfg.airbnb_ical || cfg.airbnb_ical_url || cfg.AIRBNB_ICAL);
+
+      function formatLastRefresh(label, d){
+        var prefix = label || 'Dernière mise à jour :';
+        try{
+          return prefix + ' ' + d.toLocaleString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }catch(e){
+          try{ return prefix + ' ' + (d && d.toString ? d.toString() : ''); }catch(e2){ return prefix; }
+        }
+      }
       // detect language (simple, robust heuristics)
       function detectLang(){
         try{
@@ -153,6 +168,7 @@
           loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Sectionner la période', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
         };
       }
+      var lastUpdatedLabel = labels && (labels.last_updated || labels.lastUpdated || labels.last_update) ? (labels.last_updated || labels.lastUpdated || labels.last_update) : 'Dernière mise à jour :';
       var nodes = document.querySelectorAll('.airbnb-calendar');
       if(!nodes || nodes.length===0){
         console.warn('airbnb-calendar: no .airbnb-calendar nodes found');
@@ -242,6 +258,19 @@
           var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
           var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
           link.appendChild(a); node.appendChild(link);
+
+          // show last refresh time (fetch time), discreet italic under the calendar
+          try{
+            var refreshedAt = new Date();
+            var last = document.createElement('div');
+            last.style.textAlign = 'center';
+            last.style.marginTop = '6px';
+            last.style.color = '#666';
+            last.style.fontSize = '0.85rem';
+            last.style.fontStyle = 'italic';
+            last.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
+            node.appendChild(last);
+          }catch(e){}
           // Attempt to load per-language labels from locales/labels/{lang}.json and update button text if present
           try{
             var lblUrl = new URL('labels/' + encodeURIComponent(lang) + '.json', base).href;
@@ -265,6 +294,19 @@
             var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
             var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
             link.appendChild(a); node.appendChild(link);
+
+            // show last refresh time (fetch time), discreet italic under the calendar
+            try{
+              var refreshedAt = new Date();
+              var last = document.createElement('div');
+              last.style.textAlign = 'center';
+              last.style.marginTop = '6px';
+              last.style.color = '#666';
+              last.style.fontSize = '0.85rem';
+              last.style.fontStyle = 'italic';
+              last.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
+              node.appendChild(last);
+            }catch(e){}
           }).catch(function(e){
             node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
           });

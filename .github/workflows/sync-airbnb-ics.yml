@@ -1,0 +1,64 @@
+name: Sync Airbnb iCal
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 6 hours
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-airbnb-ics
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch iCal
+        env:
+          AIRBNB_ICAL_URL: ${{ secrets.AIRBNB_ICAL_URL }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${AIRBNB_ICAL_URL:-}" ]]; then
+            echo "Missing secret AIRBNB_ICAL_URL" >&2
+            exit 1
+          fi
+
+          tmp="$(mktemp)"
+          curl -fsSL --max-time 30 \
+            -H 'User-Agent: sitewebcottage-ics-sync/1.0' \
+            "$AIRBNB_ICAL_URL" \
+            -o "$tmp"
+
+          # Basic sanity check
+          if ! head -n 5 "$tmp" | grep -q '^BEGIN:VCALENDAR'; then
+            echo "Downloaded file does not look like an iCal (.ics)" >&2
+            head -n 20 "$tmp" >&2 || true
+            exit 1
+          fi
+
+          mkdir -p locales
+          mv "$tmp" locales/airbnb.ics
+
+      - name: Commit and push if changed
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- locales/airbnb.ics; then
+            echo "No changes in locales/airbnb.ics"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add locales/airbnb.ics
+          git commit -m "chore: sync Airbnb iCal"
+          git push

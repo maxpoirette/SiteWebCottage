@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico">
     <title>Location Vacances - Parentis-en-Born, Landes</title>
-        <link rel="canonical" href="https://cottage13-domaine-du-lac.com/" />
-        <link rel="alternate" hreflang="fr" href="https://cottage13-domaine-du-lac.com/" />
-        <link rel="alternate" hreflang="en" href="https://cottage13-domaine-du-lac.com/?lang=en" />
-        <link rel="alternate" hreflang="es" href="https://cottage13-domaine-du-lac.com/?lang=es" />
-        <link rel="alternate" hreflang="nl" href="https://cottage13-domaine-du-lac.com/?lang=nl" />
-        <link rel="alternate" hreflang="de" href="https://cottage13-domaine-du-lac.com/?lang=de" />
-        <meta name="description" content="Séjournez au Cottage 13 près du lac de Parentis-en-Born (Biscarrosse) — 2 chambres, piscine, parking. / Stay at Cottage 13 near Parentis-en-Born lake (Biscarrosse) — 2 bedrooms, pool, parking. Réservez via cottage13-domaine-du-lac.com." />
+        <link rel="canonical" href="https://cottagedulac13.com/" />
+        <link rel="alternate" hreflang="fr" href="https://cottagedulac13.com/" />
+        <link rel="alternate" hreflang="en" href="https://cottagedulac13.com/?lang=en" />
+        <link rel="alternate" hreflang="es" href="https://cottagedulac13.com/?lang=es" />
+        <link rel="alternate" hreflang="nl" href="https://cottagedulac13.com/?lang=nl" />
+        <link rel="alternate" hreflang="de" href="https://cottagedulac13.com/?lang=de" />
+        <meta name="description" content="Séjournez au Cottage 13 près du lac de Parentis-en-Born (Biscarrosse) — 2 chambres, piscine, parking. / Stay at Cottage 13 near Parentis-en-Born lake (Biscarrosse) — 2 bedrooms, pool, parking. Réservez via cottagedulac13.com." />
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -24,7 +24,7 @@
                 "addressRegion": "Nouvelle-Aquitaine",
                 "addressCountry": "FR"
             },
-            "url": "https://cottage13-domaine-du-lac.com"
+            "url": "https://cottagedulac13.com"
         }
         </script>
     <style>
@@ -345,6 +345,52 @@
       const select = document.getElementById('languageSelect');
       const root = document.getElementById('langRoot');
       let siteVars = {};
+
+            const SUPPORTED_LANGS = new Set(['fr','en','es','nl','de']);
+
+            function normalizeLang(lang){
+                try{
+                    const l = String(lang || '').toLowerCase().trim().slice(0, 2);
+                    return SUPPORTED_LANGS.has(l) ? l : '';
+                }catch(e){
+                    return '';
+                }
+            }
+
+            function getLangFromURL(){
+                try{
+                    const u = new URL(location.href);
+                    return normalizeLang(u.searchParams.get('lang'));
+                }catch(e){
+                    return '';
+                }
+            }
+
+            function updateLangInURL(lang){
+                try{
+                    const l = normalizeLang(lang);
+                    const u = new URL(location.href);
+                    if(l && l !== 'fr') u.searchParams.set('lang', l);
+                    else u.searchParams.delete('lang');
+                    // keep / enforce the desired hash without adding history entries
+                    u.hash = '#bienvenue';
+                    history.replaceState(null, '', u.toString());
+                }catch(e){ /* ignore */ }
+            }
+
+            function applyLangToDocument(lang){
+                const l = normalizeLang(lang) || 'fr';
+                try{ document.documentElement.lang = l; }catch(e){}
+                try{
+                    // Keep canonical consistent with the actual language URL so hreflang variants aren't canonicalized away.
+                    const canonical = document.querySelector('link[rel="canonical"]');
+                    if(canonical){
+                        const u = new URL('https://cottagedulac13.com/');
+                        if(l !== 'fr') u.searchParams.set('lang', l);
+                        canonical.setAttribute('href', u.toString());
+                    }
+                }catch(e){}
+            }
             // Update SEO meta by loading per-language labels file from locales/labels/{lang}.json
             // This keeps translations out of index.html and allows editing labels per-language.
             async function updateSEOMeta(lang){
@@ -481,19 +527,24 @@
       // init
       (async ()=>{
         await loadSiteVars();
-                const initial = localStorage.getItem('site-lang') || 'fr';
-                select.value = initial;
-                // update SEO meta for initial language, then load locale
-                try{ updateSEOMeta(initial); }catch(e){}
-                await loadLocale(initial);
+                                const urlLang = getLangFromURL();
+                                const storedLang = normalizeLang(localStorage.getItem('site-lang'));
+                                const initial = urlLang || storedLang || 'fr';
+                                select.value = initial;
+                                try{ localStorage.setItem('site-lang', initial); }catch(e){}
+                                try{ applyLangToDocument(initial); }catch(e){}
+                                // update SEO meta for initial language, then load locale
+                                try{ updateSEOMeta(initial); }catch(e){}
+                                await loadLocale(initial);
       })();
 
             // changement de langue — revenir à l'accueil (`#bienvenue`) avant de charger la locale
             select.addEventListener('change', async e => {
                 const lang = e.target.value;
-                localStorage.setItem('site-lang', lang);
-                // remplacer l'ancre actuelle sans ajouter une entrée d'historique
-                history.replaceState(null, '', '#bienvenue');
+                try{ localStorage.setItem('site-lang', lang); }catch(e){}
+                try{ applyLangToDocument(lang); }catch(e){}
+                // maintenir une URL partageable et cohérente avec hreflang
+                try{ updateLangInURL(lang); }catch(e){}
                 try{ updateSEOMeta(lang); }catch(e){}
                 await loadLocale(lang);
             });

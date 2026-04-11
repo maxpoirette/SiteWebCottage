@@ -6,9 +6,11 @@ Ce document présente l'arborescence principale du projet et une courte descript
 
 ## Racine
 
+- `CNAME` — Domaine personnalisé pour GitHub Pages.
 - `index.html` — Page principale. Charge dynamiquement les fragments de langues depuis `locales/` et contient les sections `#accueil`, `#residence`, `#logement`, `#contact`.
 - `README.md` — Documentation du projet, instructions de développement et section "SEO / Indexation".
 - `RELEASE.md` — Notes de release et historique des changements.
+- `robots.txt` — Règles d'exploration pour les moteurs (référence le sitemap).
 - `sitemap.xml` — Plan du site pour les moteurs de recherche.
 - `.gitignore`
 - `Old_CNAME.backup`

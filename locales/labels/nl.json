@@ -1,6 +1,6 @@
 {
   "title": "Cottage 13 — Vakantiehuis bij het meer in Biscarrosse (Parentis-en-Born), Landes",
-  "description": "Verblijf in Cottage 13, een gezinsvriendelijk vakantiehuis dicht bij het meer Parentis-en-Born en het strand in Biscarrosse (Landes). 2 slaapkamers, zwembad, parkeergelegenheid. Boek op cottage13-domaine-du-lac.com.",
+  "description": "Verblijf in Cottage 13, een gezinsvriendelijk vakantiehuis dicht bij het meer Parentis-en-Born en het strand in Biscarrosse (Landes). 2 slaapkamers, zwembad, parkeergelegenheid. Boek op cottagedulac13.com.",
   "airbnb_text": "📍 Boeken op Airbnb"
   ,"calendar_labels": {
     "loading": "Kalender laden…",
@@ -10,6 +10,7 @@
     "view_listing": "Bekijk advertentie op Airbnb",
     "error_fetch": "Kan kalender niet laden.",
     "refreshing": "Actualiseren…",
+    "last_updated": "Laatst bijgewerkt:",
     "updated": "Maand selecteren",
     "refresh_error": "Fout bij actualisatie",
     "no_ical": "Geen kalender geconfigureerd."

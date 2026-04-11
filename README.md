@@ -111,10 +111,10 @@ Ces recommandations sont destinées à être affichées localement avant la conf
 
 ## SEO / Indexation (résumé rapide)
 
-Pour assurer une bonne indexation par Google une fois le site déployé sur `cottage13-domaine-du-lac.com`, voici les actions prioritaires :
+Pour assurer une bonne indexation par Google une fois le site déployé sur `cottagedulac13.com`, voici les actions prioritaires :
 
-- **Domaine canonique & HTTPS** : vérifier la configuration DNS (CNAME/A) et activer TLS/SSL pour `https://cottage13-domaine-du-lac.com`.
-- **Sitemap** : soumettre `https://cottage13-domaine-du-lac.com/sitemap.xml` dans Google Search Console après déploiement.
+- **Domaine canonique & HTTPS** : vérifier la configuration DNS (CNAME/A) et activer TLS/SSL pour `https://cottagedulac13.com`.
+- **Sitemap** : soumettre `https://cottagedulac13.com/sitemap.xml` dans Google Search Console après déploiement.
 - **Hreflang / Canonical** : les balises `hreflang` et `canonical` sont présentes dans `index.html` — vérifie les URLs si tu sers des pages séparées par langue.
 - **Meta / Titles** : les titres et descriptions SEO sont externalisés dans `locales/labels/{lang}.json` et chargés dynamiquement ; garder une meta description de fallback dans le `<head>` est recommandé.
 - **Robots.txt** : ne pas bloquer l'accès aux crawlers ; ajoute un `robots.txt` permissif avec le lien vers le sitemap si nécessaire.

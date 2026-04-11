@@ -41,7 +41,7 @@ Crédits
 
 # Release — 2026-01-02 (v2026.01.02)
 
-Résumé : i18n, SEO et amélioration du rendu du calendrier (ICS). Préparations pour déploiement sur le domaine canonique cottage13-domaine-du-lac.com.
+Résumé : i18n, SEO et amélioration du rendu du calendrier (ICS). Préparations pour déploiement sur le domaine canonique cottagedulac13.com.
 
 Principaux changements
 
@@ -62,7 +62,7 @@ Principaux changements
 
 Notes de migration / tests
 
-- Vérifier après déploiement sur https://cottage13-domaine-du-lac.com :
+- Vérifier après déploiement sur https://cottagedulac13.com :
   - que sitemap.xml est accessible et soumis à Search Console;
   - que les balises canonical / hreflang sont correctes ;
   - que le calendrier charge l'ICS (200) et s'affiche pour chaque langue (changer la langue et recharger si nécessaire).
