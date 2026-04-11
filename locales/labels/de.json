@@ -1,6 +1,6 @@
 {
   "title": "Cottage 13 — Ferienunterkunft am See in Biscarrosse (Parentis-en-Born), Landes",
-  "description": "Verbringen Sie Ihren Aufenthalt im Cottage 13, eine familienfreundliche Ferienunterkunft in der Nähe des Sees Parentis-en-Born und des Strandes in Biscarrosse (Landes). 2 Schlafzimmer, Pool, Parkplatz. Buchen Sie auf cottage13-domaine-du-lac.com.",
+  "description": "Verbringen Sie Ihren Aufenthalt im Cottage 13, eine familienfreundliche Ferienunterkunft in der Nähe des Sees Parentis-en-Born und des Strandes in Biscarrosse (Landes). 2 Schlafzimmer, Pool, Parkplatz. Buchen Sie auf cottagedulac13.com.",
   "airbnb_text": "📍 Auf Airbnb buchen"
   ,"calendar_labels": {
     "loading": "Kalender wird geladen…",
@@ -10,6 +10,7 @@
     "view_listing": "Eintrag auf Airbnb ansehen",
     "error_fetch": "Kalender konnte nicht geladen werden.",
     "refreshing": "Aktualisiere…",
+    "last_updated": "Zuletzt aktualisiert:",
     "updated": "Monat auswählen",
     "refresh_error": "Aktualisierungsfehler",
     "no_ical": "Kein Kalender konfiguriert."

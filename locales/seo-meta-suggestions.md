@@ -4,11 +4,11 @@ Pages ciblées
 
 1) Homepage (FR)
 - Title: Cottage 13 — Location de vacances près du lac à Biscarrosse (Parentis-en-Born), Landes
-- Meta description: Séjournez au Cottage 13, location familiale proche du lac de Parentis-en-Born et de la plage à Biscarrosse (Landes). 2 chambres, piscine, parking. Réservez en passant par cottage13-domaine-du-lac.com.
+- Meta description: Séjournez au Cottage 13, location familiale proche du lac de Parentis-en-Born et de la plage à Biscarrosse (Landes). 2 chambres, piscine, parking. Réservez en passant par cottagedulac13.com.
 
 1) Homepage (EN)
 - Title: Cottage 13 — Holiday rental by the lake in Biscarross (Parentis-en-Born), Landes
-- Meta description: Stay at Cottage 13, a family-friendly holiday rental near the Parentis-en-Born lake and the beach in Biscarrosse (Landes, France). 2 bedrooms, pool, parking. Book directly since cottage13-domaine-du-lac.com.
+- Meta description: Stay at Cottage 13, a family-friendly holiday rental near the Parentis-en-Born lake and the beach in Biscarrosse (Landes, France). 2 bedrooms, pool, parking. Book directly since cottagedulac13.com.
 
 2) Réservation / Availability section (FR)
 - Title: Réservation — Cottage 13 (Parentis-en-Born, Biscarrosse, Landes)
@@ -28,16 +28,16 @@ Pages ciblées
 
 Recommandations techniques courtes
 - Ajouter ces balises dans le <head> de `index.html` (ou des pages concernées).
-- Ajouter des balises `link rel="canonical"` pointant vers la version canonique (https://cottage13-domaine-du-lac.com/).
+- Ajouter des balises `link rel="canonical"` pointant vers la version canonique (https://cottagedulac13.com/).
 - Ajouter des balises `hreflang` pour indiquer les langues si vous servez des versions localisées.
 
 Exemple de meta insertion (HTML head)
 ```
-<link rel="canonical" href="https://cottage13-domaine-du-lac.com/" />
-<link rel="alternate" hreflang="fr" href="https://cottage13-domaine-du-lac.com/" />
-<link rel="alternate" hreflang="en" href="https://cottage13-domaine-du-lac.com/?lang=en" />
+<link rel="canonical" href="https://cottagedulac13.com/" />
+<link rel="alternate" hreflang="fr" href="https://cottagedulac13.com/" />
+<link rel="alternate" hreflang="en" href="https://cottagedulac13.com/?lang=en" />
 <title>Cottage 13 — Location de vacances près du lac à Biscarrosse, Landes</title>
-<meta name="description" content="Séjournez au Cottage 13, location familiale proche du lac et de la plage à Biscarrosse (Landes). 3 chambres, piscine, parking. Réservez directement sur cottage13-domaine-du-lac.com." />
+<meta name="description" content="Séjournez au Cottage 13, location familiale proche du lac et de la plage à Biscarrosse (Landes). 3 chambres, piscine, parking. Réservez directement sur cottagedulac13.com." />
 ```
 
 Prochaine étape proposée
