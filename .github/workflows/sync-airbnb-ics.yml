@@ -17,8 +17,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (main)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Fetch iCal
         env:
@@ -47,12 +49,39 @@ jobs:
           mkdir -p locales
           mv "$tmp" locales/airbnb.ics
 
-      - name: Commit and push if changed
+      - name: Commit and push if changed (main)
         run: |
           set -euo pipefail
 
           if git diff --quiet -- locales/airbnb.ics; then
-            echo "No changes in locales/airbnb.ics"
+            echo "No changes in locales/airbnb.ics on main"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git add locales/airbnb.ics
+            git commit -m "chore: sync Airbnb iCal"
+            git push
+          fi
+
+      - name: Checkout (gh-pages)
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+
+      - name: Update locales/airbnb.ics on gh-pages
+        run: |
+          set -euo pipefail
+
+          mkdir -p gh-pages/locales
+          cp -f locales/airbnb.ics gh-pages/locales/airbnb.ics
+
+          cd gh-pages
+
+          if [[ -z "$(git status --porcelain -- locales/airbnb.ics)" ]]; then
+            echo "No changes in locales/airbnb.ics on gh-pages"
             exit 0
           fi
 
@@ -60,5 +89,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add locales/airbnb.ics
-          git commit -m "chore: sync Airbnb iCal"
+          git commit -m "chore: sync Airbnb iCal (gh-pages)"
           git push

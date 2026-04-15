@@ -53,8 +53,9 @@
         }catch(e){ return null; }}
       var start = toDate(e.DTSTART);
       var end = toDate(e.DTEND) || start;
+      var dtstamp = toDate(e.DTSTAMP);
       // iCal DTEND is exclusive for full-day events; keep as-is
-      return { start:start, end:end };
+      return { start:start, end:end, dtstamp: dtstamp };
     }).filter(function(ev){ return ev.start; });
   }
 
@@ -105,8 +106,31 @@
       wrapper.appendChild(monthBox);
     }
     // legend
-    var legend = document.createElement('div'); legend.style.gridColumn='1/-1'; legend.style.marginTop='8px'; legend.innerHTML = '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border-radius:2px;margin-right:6px;vertical-align:middle"></span> Indisponible &nbsp;&nbsp; <span style="display:inline-block;width:12px;height:12px;background:#f6fffa;border-radius:2px;margin-right:6px;margin-left:12px;vertical-align:middle"></span> Disponible</small>';
-    container.appendChild(wrapper); container.appendChild(legend);
+    var legend = document.createElement('div');
+    legend.className = 'airbnb-calendar-legend';
+    legend.style.gridColumn = '1/-1';
+    legend.style.marginTop = '8px';
+    legend.style.display = 'flex';
+    legend.style.alignItems = 'center';
+    legend.style.justifyContent = 'space-between';
+    legend.style.gap = '12px';
+    legend.style.flexWrap = 'wrap';
+
+    var keys = document.createElement('div');
+    keys.className = 'legend-keys';
+    keys.innerHTML = '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border-radius:2px;margin-right:6px;vertical-align:middle"></span> Indisponible &nbsp;&nbsp; <span style="display:inline-block;width:12px;height:12px;background:#f6fffa;border-radius:2px;margin-right:6px;margin-left:12px;vertical-align:middle"></span> Disponible</small>';
+
+    var updated = document.createElement('div');
+    updated.className = 'legend-updated';
+    updated.style.color = '#666';
+    updated.style.fontSize = '0.85rem';
+    updated.style.fontStyle = 'italic';
+
+    legend.appendChild(keys);
+    legend.appendChild(updated);
+
+    container.appendChild(wrapper);
+    container.appendChild(legend);
   }
 
   function computeRangesFromSet(unavailableSet){
@@ -221,6 +245,10 @@
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
           try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
           var events = parseICal(txt);
+          var icsUpdatedAt = null;
+          events.forEach(function(ev){
+            if(ev.dtstamp && (!icsUpdatedAt || ev.dtstamp > icsUpdatedAt)) icsUpdatedAt = ev.dtstamp;
+          });
           var unavailable = new Set();
           events.forEach(function(ev){
             var s = ev.start; var e = ev.end || ev.start;
@@ -240,6 +268,14 @@
           function doRender(centerDate){
             body.innerHTML='';
             renderCalendar(body, unavailable, centerDate);
+
+            // Put last-updated (from iCal DTSTAMP) next to the legend
+            try{
+              var refreshedAt = icsUpdatedAt || new Date();
+              var upd = body.querySelector('.airbnb-calendar-legend .legend-updated');
+              if(upd) upd.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
+            }catch(e){}
+
             status.textContent = labels.updated;
             try{ debugMarker.style.display='none'; }catch(e){}
           }
@@ -259,18 +295,6 @@
           var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
           link.appendChild(a); node.appendChild(link);
 
-          // show last refresh time (fetch time), discreet italic under the calendar
-          try{
-            var refreshedAt = new Date();
-            var last = document.createElement('div');
-            last.style.textAlign = 'center';
-            last.style.marginTop = '6px';
-            last.style.color = '#666';
-            last.style.fontSize = '0.85rem';
-            last.style.fontStyle = 'italic';
-            last.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
-            node.appendChild(last);
-          }catch(e){}
           // Attempt to load per-language labels from locales/labels/{lang}.json and update button text if present
           try{
             var lblUrl = new URL('labels/' + encodeURIComponent(lang) + '.json', base).href;
