@@ -244,6 +244,26 @@
         var body = document.createElement('div'); body.className = 'airbnb-calendar-body'; node.appendChild(body);
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
           try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
+
+          // Prefer the workflow sync timestamp embedded in the VCALENDAR header (see X-SITEWEB-SYNCED-AT)
+          var syncUpdatedAt = null;
+          try{
+            var unfolded = (''+txt).replace(/\r?\n[ \t]/g, '');
+            var mSync = unfolded.match(/(?:^|\n)X-SITEWEB-SYNCED-AT:(.+)(?:\n|$)/);
+            if(mSync && mSync[1]){
+              var stamp = (mSync[1]||'').trim();
+              try{
+                if(/T/.test(stamp)){
+                  var iso = stamp.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){ return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z'; });
+                  syncUpdatedAt = new Date(iso);
+                } else {
+                  syncUpdatedAt = new Date(stamp.substr(0,4)+'-'+stamp.substr(4,2)+'-'+stamp.substr(6,2)+'T00:00:00Z');
+                }
+              }catch(e2){ syncUpdatedAt = null; }
+            }
+            if(syncUpdatedAt && isNaN(syncUpdatedAt.getTime())) syncUpdatedAt = null;
+          }catch(e){}
+
           var events = parseICal(txt);
           var icsUpdatedAt = null;
           events.forEach(function(ev){
@@ -269,9 +289,9 @@
             body.innerHTML='';
             renderCalendar(body, unavailable, centerDate);
 
-            // Put last-updated (from iCal DTSTAMP) next to the legend
+            // Put last-updated next to the legend (sync marker > iCal DTSTAMP > now)
             try{
-              var refreshedAt = icsUpdatedAt || new Date();
+              var refreshedAt = syncUpdatedAt || icsUpdatedAt || new Date();
               var upd = body.querySelector('.airbnb-calendar-legend .legend-updated');
               if(upd) upd.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
             }catch(e){}
