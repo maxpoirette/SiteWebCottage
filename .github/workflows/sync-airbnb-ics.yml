@@ -78,6 +78,19 @@ jobs:
           mkdir -p gh-pages/locales
           cp -f locales/airbnb.ics gh-pages/locales/airbnb.ics
 
+          # Force a "last sync" marker so the published file reflects the latest workflow run,
+          # even when Airbnb returns identical content.
+          synced_at="$(date -u +%Y%m%dT%H%M%SZ)"
+          tmpfile="$(mktemp)"
+          awk -v ts="$synced_at" '
+            BEGIN{inserted=0}
+            /^X-SITEWEB-SYNCED-AT:/ { next }
+            { print }
+            !inserted && /^VERSION:2\.0/ { print "X-SITEWEB-SYNCED-AT:" ts; inserted=1 }
+            END{ if(!inserted) print "X-SITEWEB-SYNCED-AT:" ts }
+          ' gh-pages/locales/airbnb.ics > "$tmpfile"
+          mv "$tmpfile" gh-pages/locales/airbnb.ics
+
           cd gh-pages
 
           if [[ -z "$(git status --porcelain -- locales/airbnb.ics)" ]]; then
