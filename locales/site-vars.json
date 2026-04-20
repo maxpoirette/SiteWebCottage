@@ -6,13 +6,14 @@
     "BANNIERE": "photos/Banniere.png",
     "PARKING": "photos/piscine-ext.jpg",
     "PISCINE": "photos/piscine-ext.jpg",
-    "ESPACES": "photos/piscine-ext.jpg",
+    "ESPACES": "photos/exterior-cottage-1.png",
     "SECURITE": "photos/piscine-ext.jpg",
     "NATURE": "photos/nature.jpg",
     "CHAMBRE": "photos/interior-chambre-parent.png",
     "SALON": "photos/interior-salon.png",
     "CUISINE": "photos/interior-cuisine.png",
-    "SALLE_DE_BAIN": "photos/interior-salle-de-bain.png"
+    "SALLE_DE_BAIN": "photos/interior-salle-de-bain.png",
+    "EQUIPEMENTS_1": "photos/exterior-cottage-1.png"
   },
   "airbnb_url": "https://www.airbnb.fr/rooms/1611595877411509150?source_impression_id=p3_1775921321_P3yzlqNvflCeQKk7",
   "year": "2026",
