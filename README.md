@@ -8,6 +8,7 @@ Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le 
 - 📱 **Responsive** : Compatible desktop, tablette et mobile
 - 🎨 **Design moderne** : Interface élégante avec animations fluides
 - 🗺️ **Navigation intuitive** : Scroll fluide vers les différentes sections
+- 🔍 **Agrandissement des photos** : Ouverture des images en grand au clic avec fermeture par overlay ou touche Échap
 - 📧 **Formulaire de contact** : Pour les demandes de réservation
 - 🔗 **Intégration Airbnb** : Lien vers le futur compte Airbnb
 
@@ -21,6 +22,7 @@ Site statique pour la location de vacances à Parentis‑en‑Born (Landes). Le 
 - Variables centralisées : `locales/site-vars.json` contient les chemins d'images et petits textes modifiables (`{{IMG_*}}`, `{{AIRBNB_TEXT}}`, `{{YEAR}}`).
 - Le `index.html` charge dynamiquement la locale via `fetch` et remplace les tokens.
 - Les images sont dans `photos/` et référencées depuis `site-vars.json`.
+- La section `Services et équipements` est distincte du logement et doit conserver le même id de navigation dans toutes les langues : `#services-equipements`.
 
 ## Répertoire des fichiers
 
@@ -31,7 +33,7 @@ Pour la liste complète des fichiers et leurs descriptions, voir [REPOSITORY.md]
 Important : l'application charge les fragments de `locales/` via `fetch`. Ouvrir `index.html` en `file://` entraîne des échecs de chargement. Lancez un serveur local pour le développement :
 
 ```bash
-cd /Users/Maxime/Desktop/SiteWebCottage/SiteWebCottage
+cd /chemin/vers/SiteWebCottage
 python3 -m http.server 8000
 # puis ouvrez http://localhost:8000
 ```
@@ -44,9 +46,10 @@ Le loader utilise `fetch(..., {cache: 'no-cache'})` par défaut pour éviter des
 ## Ajouter / Mettre à jour une langue
 
 1. Créer `locales/xx.html` (où `xx` est le code langue).
-2. Utiliser les mêmes `id` de sections (`#accueil`, `#residence`, `#logement`, `#contact`) dans le fichier.
-3. Utiliser les tokens `{{IMG_OCEAN}}`, `{{IMG_LAC}}`, `{{IMG_FORET}}` pour les images.
-4. Ajouter l'option correspondante dans le sélecteur de langue dans `index.html` si nécessaire.
+2. Utiliser les mêmes `id` de sections que les locales existantes : `#bienvenue`, `#region`, `#residence`, `#logement`, `#services-equipements`, `#contact`.
+3. Conserver les mêmes ancres de navigation entre le menu et les sections, sinon le scroll interne ne fonctionnera pas.
+4. Utiliser les tokens `{{IMG_OCEAN}}`, `{{IMG_LAC}}`, `{{IMG_FORET}}` et plus généralement les `{{IMG_*}}` définis dans `locales/site-vars.json`.
+5. Ajouter l'option correspondante dans le sélecteur de langue dans `index.html` si nécessaire.
 
 ## Modifier les images / textes centralisés
 
@@ -55,12 +58,13 @@ Le loader utilise `fetch(..., {cache: 'no-cache'})` par défaut pour éviter des
 ```json
 {
 	"images": {
-		"OCEAN": "photos/biscarrosse-plage-768x506.webp",
-		"LAC": "photos/parentis-en-born-landes-1617x1080.webp",
-		"FORET": "photos/foret-landes-640x360.webp"
+		"OCEAN": "photos/biscarrosse-plage.jpeg",
+		"LAC": "photos/parentis-en-born-landes.jpeg",
+		"FORET": "photos/foret-landes.jpeg",
+		"BANNIERE": "photos/Banniere.png"
 	},
-	"airbnb_text": "📍 Réserver via Airbnb (bientôt)",
-	"year": "2025"
+	"airbnb_url": "https://www.airbnb.fr/...",
+	"year": "2026"
 }
 ```
 
@@ -70,6 +74,7 @@ Après modification, rechargez la page (ou utilisez la console DevTools pour for
 
 - Servez toujours le site via HTTP pendant le développement.
 - Modifiez les textes dans `locales/*.html` et les ressources dans `locales/site-vars.json` pour minimiser l'impact des changements.
+- Pour toute nouvelle section navigable, gardez le même `id` dans toutes les locales et ajoutez l'entrée correspondante dans chaque menu localisé.
 
 ## Mise à jour Git — Checklist rapide
 
