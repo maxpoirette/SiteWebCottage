@@ -186,10 +186,11 @@
         }
 
         .image-lightbox img {
-            max-width: min(1200px, calc(100vw - 48px));
-            max-height: calc(100vh - 48px);
-            width: auto;
-            height: auto;
+            width: min(1200px, calc(100vw - 48px));
+            height: min(820px, calc(100vh - 48px));
+            object-fit: contain;
+            object-position: center;
+            display: block;
             border-radius: 12px;
             box-shadow: 0 18px 48px rgba(0,0,0,0.35);
             background: #fff;
