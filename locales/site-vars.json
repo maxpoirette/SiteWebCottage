@@ -4,7 +4,7 @@
     "LAC": "photos/parentis-en-born-landes.jpeg",
     "FORET": "photos/foret-landes.jpeg",
     "BANNIERE": "photos/Banniere.png",
-    "PARKING": "photos/residence-parking.png",
+    "PARKING": "photos/equipements-laverie.png",
     "PISCINE": "photos/piscine-ext.jpg",
     "ESPACES": "photos/nature.jpg",
     "SECURITE": "photos/residence-digicode.png",
@@ -15,6 +15,7 @@
     "SALLE_DE_BAIN": "photos/interior-salle-de-bain.png",
     "EQUIPEMENTS_1": "photos/exterior-cottage-1.png",
     "EQUIPEMENTS_2": "photos/equipements-terrasse-restaurant.png",
+    "EQUIPEMENTS_3": "photos/equipements-laverie.png",
     "EQUIPEMENTS_4": "photos/equipements-bornes.png"
   },
   "airbnb_url": "https://www.airbnb.fr/rooms/1611595877411509150?source_impression_id=p3_1775921321_P3yzlqNvflCeQKk7",
