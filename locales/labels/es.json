@@ -13,6 +13,9 @@
     "last_updated": "Última actualización:",
     "updated": "Seleccionar mes",
     "refresh_error": "Error de actualización",
-    "no_ical": "Ningún calendario configurado."
+    "no_ical": "Ningún calendario configurado.",
+    "available": "Disponible",
+    "unavailable": "No disponible",
+    "past": "Período terminado"
   }
 }
