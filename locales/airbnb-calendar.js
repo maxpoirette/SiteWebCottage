@@ -106,8 +106,6 @@
     wrapper.style.gridTemplateColumns = 'repeat(auto-fit,minmax(220px,1fr))';
     wrapper.style.gap = '12px';
 
-    var todayKey = isoDateKey(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())));
-
     for(var m=0;m<months;m++){
       var d = new Date(Date.UTC(centre.getUTCFullYear(), centre.getUTCMonth()-1 + m, 1));
       var monthBox = document.createElement('div');
@@ -171,9 +169,9 @@
           cell.style.borderColor = '#e5e7eb';
           cell.title = 'Période terminée';
         } else {
-          cell.style.background = '#f6fffa';
-          cell.style.color = '#0a6b3a';
-          cell.style.borderColor = '#d7f3e4';
+          cell.style.background = '#eafaf1';
+          cell.style.color = '#0d7a4a';
+          cell.style.borderColor = '#cfeedd';
           cell.title = 'Disponible';
         }
 
@@ -198,7 +196,7 @@
     var keys = document.createElement('div');
     keys.className = 'legend-keys';
     keys.innerHTML = [
-      '<small><span style="display:inline-block;width:12px;height:12px;background:#f6fffa;border:1px solid #d7f3e4;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Disponible</small>',
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#eafaf1;border:1px solid #cfeedd;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Disponible</small>',
       '&nbsp;&nbsp;',
       '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border:1px solid #f3c9c9;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Indisponible</small>',
       '&nbsp;&nbsp;',
