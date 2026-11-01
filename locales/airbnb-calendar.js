@@ -1,111 +1,190 @@
 (function(){
-  // diagnostic flag
-  try{ window.__airbnbCalendarLoaded = (window.__airbnbCalendarLoaded||0) + 1; }catch(e){}
-  // Minimal Airbnb iCal -> calendar renderer
   function detectBase(){
     var s = document.currentScript;
-    if(!s){ var scripts=document.getElementsByTagName('script'); for(var i=0;i<scripts.length;i++){ if((scripts[i].src||'').indexOf('airbnb-calendar.js')!==-1){ s=scripts[i]; break; } } }
-    try{ return s && s.src ? new URL('.', s.src).href : (location.origin + (location.pathname.endsWith('/') ? location.pathname + 'locales/' : '/locales/')); }catch(e){ return location.origin + '/locales/'; }
+    if(!s){
+      var scripts = document.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        if((scripts[i].src||'').indexOf('airbnb-calendar.js') !== -1){
+          s = scripts[i]; break;
+        }
+      }
+    }
+    try{
+      return s && s.src ? new URL('.', s.src).href : (location.origin + (location.pathname.endsWith('/') ? location.pathname + 'locales/' : '/locales/'));
+    }catch(e){
+      return location.origin + '/locales/';
+    }
   }
+
   var base = detectBase();
-  function fetchSiteVars(){ return fetch(new URL('site-vars.json', base).href).then(function(r){ if(!r.ok) throw new Error('no cfg'); return r.json(); }); }
+
+  function fetchSiteVars(){
+    return fetch(new URL('site-vars.json', base).href).then(function(r){
+      if(!r.ok) throw new Error('no cfg');
+      return r.json();
+    });
+  }
 
   function parseICal(text){
-    // unfold folded lines (lines starting with space or tab continue previous line)
     var raw = text.split(/\r?\n/);
     var lines = [];
     for(var i=0;i<raw.length;i++){
       var ln = raw[i];
-      if((ln.charAt(0) === ' ' || ln.charAt(0) === '\t') && lines.length){
+      if((ln.charAt(0)===' ' || ln.charAt(0)==='\t') && lines.length){
         lines[lines.length-1] += ln.slice(1);
       } else {
         lines.push(ln);
       }
     }
-    var events = [];
-    var cur = null;
+
+    var events=[]; var cur=null;
     for(var i=0;i<lines.length;i++){
       var l = lines[i];
       if(/^BEGIN:VEVENT/i.test(l)){ cur = {}; continue; }
       if(/^END:VEVENT/i.test(l)){ if(cur) events.push(cur); cur=null; continue; }
       if(!cur) continue;
-      // capture property name (allow parameters after a semicolon) and value after ':'
       var m = l.match(/^([A-Z0-9-]+)(?:;[^:]*)?:(.*)$/i);
       if(m){
         var key = m[1].toUpperCase();
         var val = m[2] || '';
-        cur[key] = (cur[key]||'') + val;
+        cur[key] = (cur[key] || '') + val;
       }
     }
+
     return events.map(function(e){
-      // support DTSTART and DTEND formats YYYYMMDD or YYYYMMDDTHHMMSSZ
-      function toDate(s){ try{
+      function toDate(s){
+        try{
           if(!s) return null;
           s = (''+s).trim();
-          // remove timezone suffix Z
           if(/T/.test(s)){
-            // try ISO
-            var iso = s.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){ return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z'; });
+            var iso = s.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){
+              return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z';
+            });
             return new Date(iso);
           }
-          // date only (VALUE=DATE) format
           return new Date(s.substr(0,4)+'-'+s.substr(4,2)+'-'+s.substr(6,2)+'T00:00:00Z');
-        }catch(e){ return null; }}
+        }catch(e){ return null; }
+      }
       var start = toDate(e.DTSTART);
       var end = toDate(e.DTEND) || start;
       var dtstamp = toDate(e.DTSTAMP);
-      // iCal DTEND is exclusive for full-day events; keep as-is
       return { start:start, end:end, dtstamp: dtstamp };
     }).filter(function(ev){ return ev.start; });
   }
 
-  function daysBetween(a,b){ // a inclusive, b exclusive
-    var out=[]; var cur=new Date(Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate())); var end=new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate()));
-    while(cur < end){ out.push(new Date(cur)); cur.setUTCDate(cur.getUTCDate()+1); }
+  function daysBetween(a,b){
+    var out=[];
+    var cur=new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate()));
+    var end=new Date(Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()));
+    while(cur < end){
+      out.push(new Date(cur));
+      cur.setUTCDate(cur.getUTCDate()+1);
+    }
     return out;
+  }
+
+  function isoDateKey(date){
+    var d = new Date(date);
+    return d.toISOString().slice(0,10);
+  }
+
+  function isPastDateKey(key){
+    if(!key) return false;
+    var today = new Date();
+    var todayKey = isoDateKey(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())));
+    return key < todayKey;
   }
 
   function renderCalendar(container, unavailableSet){
     container.innerHTML = '';
-    // if a centre month Date is provided via arguments, use it; otherwise default to today
-    var centre = arguments.length>2 && arguments[2] ? arguments[2] : new Date();
-    // normalize to UTC month start
+    var centre = arguments.length > 2 && arguments[2] ? new Date(arguments[2]) : new Date();
     centre = new Date(Date.UTC(centre.getFullYear(), centre.getMonth(), 1));
     var months = 3;
-    var wrapper = document.createElement('div'); wrapper.className='airbnb-calendar-wrapper'; wrapper.style.display='grid'; wrapper.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; wrapper.style.gap='12px';
+    var wrapper = document.createElement('div');
+    wrapper.className = 'airbnb-calendar-wrapper';
+    wrapper.style.display = 'grid';
+    wrapper.style.gridTemplateColumns = 'repeat(auto-fit,minmax(220px,1fr))';
+    wrapper.style.gap = '12px';
+
+    var todayKey = isoDateKey(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())));
+
     for(var m=0;m<months;m++){
-      // start from the month before the centre
       var d = new Date(Date.UTC(centre.getUTCFullYear(), centre.getUTCMonth()-1 + m, 1));
-      var monthBox = document.createElement('div'); monthBox.style.background='#fff'; monthBox.style.padding='8px'; monthBox.style.border='1px solid #e6e6e6'; monthBox.style.borderRadius='6px';
-      var title = document.createElement('h4'); title.style.margin='0 0 8px'; title.style.fontSize='1rem'; title.textContent = d.toLocaleString(undefined,{month:'long', year:'numeric'});
+      var monthBox = document.createElement('div');
+      monthBox.style.background = '#fff';
+      monthBox.style.padding = '8px';
+      monthBox.style.border = '1px solid #e6e6e6';
+      monthBox.style.borderRadius = '6px';
+
+      var title = document.createElement('h4');
+      title.style.margin = '0 0 8px';
+      title.style.fontSize = '1rem';
+      title.textContent = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
       monthBox.appendChild(title);
-      var grid = document.createElement('div'); grid.style.display='grid'; grid.style.gridTemplateColumns='repeat(7,1fr)'; grid.style.gap='4px';
-      var days = ['D','L','M','M','J','V','S']; for(var di=0;di<7;di++){ var hd=document.createElement('div'); hd.style.textAlign='center'; hd.style.fontSize='0.8rem'; hd.style.fontWeight='600'; hd.style.color='#666'; hd.textContent = days[di]; grid.appendChild(hd); }
-      var firstDay = d.getUTCDay(); // 0..6 Sun..Sat (UTC)
-      if(firstDay===0) firstDay=0; // keep sunday first as in FR? We'll display Sun..Sat but days header is D L M...
-      // blank cells
-      for(var b=0;b<firstDay;b++){ var blank=document.createElement('div'); blank.innerHTML='&nbsp;'; grid.appendChild(blank); }
-      // days
-      var month = d.getUTCMonth(); var dayCursor = new Date(d);
-      while(dayCursor.getUTCMonth()===month){
+
+      var grid = document.createElement('div');
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = 'repeat(7,1fr)';
+      grid.style.gap = '4px';
+
+      var days = ['D','L','M','M','J','V','S'];
+      for(var di=0;di<7;di++){
+        var hd = document.createElement('div');
+        hd.style.textAlign = 'center';
+        hd.style.fontSize = '0.8rem';
+        hd.style.fontWeight = '600';
+        hd.style.color = '#666';
+        hd.textContent = days[di];
+        grid.appendChild(hd);
+      }
+
+      var firstDay = d.getUTCDay();
+      for(var b=0;b<firstDay;b++){
+        var blank = document.createElement('div');
+        blank.innerHTML = '&nbsp;';
+        blank.style.minHeight = '34px';
+        grid.appendChild(blank);
+      }
+
+      var month = d.getUTCMonth();
+      var dayCursor = new Date(d);
+      while(dayCursor.getUTCMonth() === month){
         var cell = document.createElement('div');
-        cell.style.minHeight='34px'; cell.style.padding='4px'; cell.style.borderRadius='4px'; cell.style.textAlign='right';
-        var dayNum = dayCursor.getUTCDate(); cell.textContent = dayNum;
-        var key = dayCursor.toISOString().slice(0,10);
+        cell.style.minHeight = '34px';
+        cell.style.padding = '4px';
+        cell.style.borderRadius = '4px';
+        cell.style.textAlign = 'right';
+        cell.style.fontSize = '0.9rem';
+        cell.style.border = '1px solid transparent';
+        var dayNum = dayCursor.getUTCDate();
+        cell.textContent = dayNum;
+        var key = isoDateKey(dayCursor);
+
         if(unavailableSet.has(key)){
-          cell.style.background='#ffefef'; cell.style.color='#b00000';
+          cell.style.background = '#ffefef';
+          cell.style.color = '#b00000';
+          cell.style.borderColor = '#f3c9c9';
           cell.title = 'Indisponible';
+        } else if(isPastDateKey(key)){
+          cell.style.background = '#f1f3f5';
+          cell.style.color = '#6b7280';
+          cell.style.borderColor = '#e5e7eb';
+          cell.title = 'Période terminée';
         } else {
-          cell.style.background='#f6fffa'; cell.style.color='#0a6b3a';
+          cell.style.background = '#f6fffa';
+          cell.style.color = '#0a6b3a';
+          cell.style.borderColor = '#d7f3e4';
           cell.title = 'Disponible';
         }
+
         grid.appendChild(cell);
         dayCursor.setUTCDate(dayCursor.getUTCDate()+1);
       }
+
       monthBox.appendChild(grid);
       wrapper.appendChild(monthBox);
     }
-    // legend
+
     var legend = document.createElement('div');
     legend.className = 'airbnb-calendar-legend';
     legend.style.gridColumn = '1/-1';
@@ -118,7 +197,13 @@
 
     var keys = document.createElement('div');
     keys.className = 'legend-keys';
-    keys.innerHTML = '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border-radius:2px;margin-right:6px;vertical-align:middle"></span> Indisponible &nbsp;&nbsp; <span style="display:inline-block;width:12px;height:12px;background:#f6fffa;border-radius:2px;margin-right:6px;margin-left:12px;vertical-align:middle"></span> Disponible</small>';
+    keys.innerHTML = [
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#f6fffa;border:1px solid #d7f3e4;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Disponible</small>',
+      '&nbsp;&nbsp;',
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border:1px solid #f3c9c9;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Indisponible</small>',
+      '&nbsp;&nbsp;',
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#f1f3f5;border:1px solid #e5e7eb;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Période terminée</small>'
+    ].join('');
 
     var updated = document.createElement('div');
     updated.className = 'legend-updated';
@@ -148,7 +233,6 @@
     if(start) ranges.push([start,end]);
     return ranges;
   }
-  // Reservations list removed — travelers don't need a textual list of reserved dates.
 
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
@@ -168,84 +252,116 @@
           try{ return prefix + ' ' + (d && d.toString ? d.toString() : ''); }catch(e2){ return prefix; }
         }
       }
-      // detect language (simple, robust heuristics)
+
       function detectLang(){
         try{
           try{ var ls = localStorage.getItem('site-lang'); if(ls) return (ls||'').substring(0,2); }catch(e){}
           try{ var sel = document.getElementById('languageSelect'); if(sel && sel.value) return (sel.value||'').substring(0,2); }catch(e){}
           if(document.documentElement && document.documentElement.lang) return document.documentElement.lang.substring(0,2);
-          var nodes = document.querySelectorAll('.lang-content[data-lang]'); for(var i=0;i<nodes.length;i++){ var el=nodes[i]; var s=window.getComputedStyle(el); if(s && s.display !== 'none') return (el.getAttribute('data-lang')||'').substring(0,2); }
-          var any = document.querySelector('[data-lang]'); if(any) return (any.getAttribute('data-lang')||'').substring(0,2);
           if(navigator && navigator.language) return (navigator.language||'').substring(0,2);
         }catch(e){}
         return 'fr';
       }
+
       var lang = (detectLang() || 'fr').toLowerCase();
-      var labels = null;
-      try{
-        if(window.__SEO_LABELS_CACHE__ && window.__SEO_LABELS_CACHE__[lang] && window.__SEO_LABELS_CACHE__[lang].calendar_labels){
-          labels = window.__SEO_LABELS_CACHE__[lang].calendar_labels;
-        }
-      }catch(e){}
-      if(!labels){
-        labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
-          loading: 'Chargement du calendrier…', refresh: 'Actualiser', no_reservations: 'Aucune réservation affichée.', reserved_title: 'Périodes réservées', view_listing: 'Voir l\'annonce Airbnb', error_fetch: 'Impossible de charger le calendrier.', refreshing: 'Actualisation…', updated: 'Sectionner la période', refresh_error: 'Erreur d\'actualisation', no_ical: 'Aucun calendrier configuré.'
-        };
-      }
-      var lastUpdatedLabel = labels && (labels.last_updated || labels.lastUpdated || labels.last_update) ? (labels.last_updated || labels.lastUpdated || labels.last_update) : 'Dernière mise à jour :';
+      var labels = {
+        loading: 'Chargement du calendrier…',
+        updated: 'Calendrier mis à jour',
+        error_fetch: 'Erreur de chargement du calendrier',
+        no_ical: 'Aucune source de calendrier disponible.'
+      };
+
       var nodes = document.querySelectorAll('.airbnb-calendar');
       if(!nodes || nodes.length===0){
         console.warn('airbnb-calendar: no .airbnb-calendar nodes found');
       }
+
       nodes.forEach(function(node){
         try{ node.classList.add('airbnb-calendar-initialized'); }catch(e){}
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
-        // if dataset contains a template token like {{AIRBNB_ICAL}} treat it as empty
-        try{
-          if(typeof ical === 'string' && /\{\{.*\}\}/.test(ical)){
-            ical = icalUrlOverride || defaultIcal;
-          }
-        }catch(e){}
+        if(typeof ical === 'string' && /\{\{.*\}\}/.test(ical)){
+          ical = icalUrlOverride || defaultIcal;
+        }
         if(!ical){ node.innerHTML = '<p>' + labels.no_ical + '</p>'; return; }
-        // resolve ical URL relative to script base so leading '/' doesn't break on repo pages
+
         try{
           if(ical && !(ical.indexOf('http://')===0 || ical.indexOf('https://')===0)){
-            // prefer an absolute URL based on the current site path so Pages paths work
             var icalNorm = (''+ical).replace(/^\/+/, '');
             var sitePath = (location.pathname || '/');
             if(sitePath.indexOf('/') !== 0) sitePath = '/' + sitePath;
             if(!sitePath.endsWith('/')) sitePath += '/';
             var absolute = location.origin + sitePath + icalNorm;
-            // normalize double-slashes
-            absolute = absolute.replace(/([^:]\/)\/+/g, '$1');
+            absolute = absolute.replace(/([^:]\/)\/+?/g, '$1');
             ical = absolute;
           }
         }catch(e){}
-        // build container with refresh button
-        node.innerHTML = '';
-        // quick visual marker to help debugging if layout hides the calendar
-        var debugMarker = document.createElement('div'); debugMarker.style.fontSize='0.9rem'; debugMarker.style.color='#666'; debugMarker.style.textAlign='center'; debugMarker.style.marginBottom='6px'; debugMarker.textContent = labels.loading;
-        node.appendChild(debugMarker);
-        var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
-        var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
-        // build nicer month+year selectors (native month input looks inconsistent)
-        var selWrap = document.createElement('div'); selWrap.style.display='flex'; selWrap.style.alignItems='center'; selWrap.style.gap='8px';
-        var monthSelect = document.createElement('select'); monthSelect.style.padding='6px 8px'; monthSelect.style.border='1px solid #ddd'; monthSelect.style.borderRadius='6px';
-        var monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-        for(var mi=0;mi<12;mi++){ var mo = document.createElement('option'); mo.value = (mi+1).toString().padStart(2,'0'); mo.textContent = monthNames[mi]; monthSelect.appendChild(mo); }
-        var yearSelect = document.createElement('select'); yearSelect.style.padding='6px 8px'; yearSelect.style.border='1px solid #ddd'; yearSelect.style.borderRadius='6px';
-        var nowLocal = new Date(); var startY = nowLocal.getFullYear(); for(var y=0;y<6;y++){ var yo = document.createElement('option'); yo.value = (startY+y); yo.textContent = (startY+y); yearSelect.appendChild(yo); }
-        // set defaults to current month/year
-        monthSelect.value = (nowLocal.getMonth()+1).toString().padStart(2,'0'); yearSelect.value = startY;
-        selWrap.appendChild(monthSelect); selWrap.appendChild(yearSelect);
-        // no refresh button — selection suffices
-        var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='8px'; left.appendChild(status); left.appendChild(selWrap);
-        topBar.appendChild(left); node.appendChild(topBar);
-        var body = document.createElement('div'); body.className = 'airbnb-calendar-body'; node.appendChild(body);
-        fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
-          try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
 
-          // Prefer the workflow sync timestamp embedded in the VCALENDAR header (see X-SITEWEB-SYNCED-AT)
+        node.innerHTML = '';
+        var debugMarker = document.createElement('div');
+        debugMarker.style.fontSize = '0.9rem';
+        debugMarker.style.color = '#666';
+        debugMarker.style.textAlign = 'center';
+        debugMarker.style.marginBottom = '6px';
+        debugMarker.textContent = labels.loading;
+        node.appendChild(debugMarker);
+
+        var status = document.createElement('div');
+        status.style.fontSize = '0.95rem';
+        status.style.color = '#666';
+        status.textContent = labels.loading;
+
+        var monthSelect = document.createElement('select');
+        monthSelect.style.padding = '6px 8px';
+        monthSelect.style.border = '1px solid #ddd';
+        monthSelect.style.borderRadius = '6px';
+        var monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+        for(var mi=0;mi<12;mi++){
+          var mo = document.createElement('option');
+          mo.value = (mi + 1).toString().padStart(2,'0');
+          mo.textContent = monthNames[mi];
+          monthSelect.appendChild(mo);
+        }
+
+        var yearSelect = document.createElement('select');
+        yearSelect.style.padding = '6px 8px';
+        yearSelect.style.border = '1px solid #ddd';
+        yearSelect.style.borderRadius = '6px';
+        var nowLocal = new Date(); var startY = nowLocal.getFullYear();
+        for(var y=0;y<6;y++){
+          var yo = document.createElement('option');
+          yo.value = (startY + y);
+          yo.textContent = (startY + y);
+          yearSelect.appendChild(yo);
+        }
+        monthSelect.value = (nowLocal.getMonth()+1).toString().padStart(2,'0');
+        yearSelect.value = startY;
+
+        var topBar = document.createElement('div');
+        topBar.style.display = 'flex';
+        topBar.style.justifyContent = 'space-between';
+        topBar.style.alignItems = 'center';
+        topBar.style.marginBottom = '6px';
+        topBar.style.gap = '8px';
+        topBar.style.flexWrap = 'wrap';
+
+        var left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '10px';
+        left.style.flexWrap = 'wrap';
+        left.appendChild(status);
+        left.appendChild(monthSelect);
+        left.appendChild(yearSelect);
+        topBar.appendChild(left);
+        node.appendChild(topBar);
+
+        var body = document.createElement('div');
+        body.className = 'airbnb-calendar-body';
+        node.appendChild(body);
+
+        fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
+          debugMarker.textContent = labels.loading + ' (récupération…)';
+
           var syncUpdatedAt = null;
           try{
             var unfolded = (''+txt).replace(/\r?\n[ \t]/g, '');
@@ -269,12 +385,12 @@
           events.forEach(function(ev){
             if(ev.dtstamp && (!icsUpdatedAt || ev.dtstamp > icsUpdatedAt)) icsUpdatedAt = ev.dtstamp;
           });
+
           var unavailable = new Set();
           events.forEach(function(ev){
             var s = ev.start; var e = ev.end || ev.start;
-            // iCal full-day events often have end = day after; treat as exclusive
-            var days = daysBetween(s,e);
-            days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); });
+            var daysList = daysBetween(s,e);
+            daysList.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); });
           });
 
           function parseInputMonth(){
@@ -286,62 +402,57 @@
           }
 
           function doRender(centerDate){
-            body.innerHTML='';
+            body.innerHTML = '';
             renderCalendar(body, unavailable, centerDate);
-
-            // Put last-updated next to the legend (sync marker > iCal DTSTAMP > now)
-            try{
-              var refreshedAt = syncUpdatedAt || icsUpdatedAt || new Date();
-              var upd = body.querySelector('.airbnb-calendar-legend .legend-updated');
-              if(upd) upd.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt);
-            }catch(e){}
-
+            var refreshedAt = syncUpdatedAt || icsUpdatedAt || new Date();
+            var upd = body.querySelector('.airbnb-calendar-legend .legend-updated');
+            if(upd) upd.textContent = formatLastRefresh('Dernière mise à jour :', refreshedAt);
             status.textContent = labels.updated;
-            try{ debugMarker.style.display='none'; }catch(e){}
+            try{ debugMarker.style.display = 'none'; }catch(e){}
           }
 
-          // initial render: selected month or today
           doRender(parseInputMonth());
-
-          // wire month/year change
           monthSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
           yearSelect.addEventListener('change', function(){ doRender(parseInputMonth()); });
 
-          // add booking button (uses configured URL if present, else default listing)
           var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
           var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb Direct';
-          try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
-          var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
-          var a = document.createElement('a'); a.href = listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className = 'airbnb-link';
-          link.appendChild(a); node.appendChild(link);
-
-          // Attempt to load per-language labels from locales/labels/{lang}.json and update button text if present
-          try{
-            var lblUrl = new URL('labels/' + encodeURIComponent(lang) + '.json', base).href;
-            fetch(lblUrl, { cache: 'no-cache' }).then(function(r){ if(!r.ok) return null; return r.json(); }).then(function(L){ if(!L) return; try{ var txt = (typeof L.airbnb_texts === 'object' ? (L.airbnb_texts && L.airbnb_texts[lang]) : (L.airbnb_texts || L.airbnb_text)); if(txt) a.textContent = txt; }catch(e){} }).catch(function(){/* ignore */});
-          }catch(e){}
+          var link = document.createElement('p');
+          link.style.textAlign = 'center';
+          link.style.marginTop = '8px';
+          var a = document.createElement('a');
+          a.href = listingUrl;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = buttonText;
+          a.className = 'airbnb-link';
+          link.appendChild(a);
+          node.appendChild(link);
         }).catch(function(err){
           console.error('airbnb-calendar: fetch error', err);
           status.textContent = labels.error_fetch;
-          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
+          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+((cfg && (cfg.airbnb_url || cfg.airbnb)) || '#')+'" target="_blank" rel="noopener">Voir l’annonce</a></p>';
         });
       });
     }).catch(function(){
-      var nodes = document.querySelectorAll('.airbnb-calendar'); nodes.forEach(function(n){ n.innerHTML='<p>Configuration indisponible.</p>'; });
+      var nodes = document.querySelectorAll('.airbnb-calendar');
+      nodes.forEach(function(n){ n.innerHTML = '<p>Configuration indisponible.</p>'; });
     });
   }
 
-  // auto-run on DOM ready — call mountAll without passing the event object
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ mountAll(); }); else mountAll();
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ mountAll(); });
+  } else {
+    mountAll();
+  }
 
-  // observe DOM mutations so dynamic injections (language switches) retrigger initialization
   try{
     var __airbnbMo = new MutationObserver(function(muts){
       var found = false;
       muts.forEach(function(m){
-        Array.prototype.forEach.call(m.addedNodes||[], function(n){
+        Array.prototype.forEach.call(m.addedNodes || [], function(n){
           if(!n) return;
-          if(n.nodeType===1){
+          if(n.nodeType === 1){
             if((n.classList && n.classList.contains && n.classList.contains('airbnb-calendar')) || (n.querySelector && n.querySelector('.airbnb-calendar'))){ found = true; }
           }
         });
