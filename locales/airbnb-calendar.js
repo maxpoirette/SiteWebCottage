@@ -2,27 +2,29 @@
   function detectBase(){
     var s = document.currentScript;
     if(!s){
-      var scripts = document.getElementsByTagName('script');
+      var scripts=document.getElementsByTagName('script');
       for(var i=0;i<scripts.length;i++){
-        if((scripts[i].src||'').indexOf('airbnb-calendar.js') !== -1){
-          s = scripts[i]; break;
-        }
+        if((scripts[i].src||'').indexOf('airbnb-calendar.js')!==-1){ s=scripts[i]; break; }
       }
     }
-    try{
-      return s && s.src ? new URL('.', s.src).href : (location.origin + (location.pathname.endsWith('/') ? location.pathname + 'locales/' : '/locales/'));
-    }catch(e){
-      return location.origin + '/locales/';
-    }
+    try{ return s && s.src ? new URL('.', s.src).href : (location.origin + (location.pathname.endsWith('/') ? location.pathname + 'locales/' : '/locales/')); }
+    catch(e){ return location.origin + '/locales/'; }
   }
 
   var base = detectBase();
 
-  function fetchSiteVars(){
-    return fetch(new URL('site-vars.json', base).href).then(function(r){
-      if(!r.ok) throw new Error('no cfg');
-      return r.json();
-    });
+  function fetchSiteVars(){ return fetch(new URL('site-vars.json', base).href).then(function(r){ if(!r.ok) throw new Error('no cfg'); return r.json(); }); }
+
+  function getStateLabels(lang){
+    var map = {
+      fr: { available: 'Disponible', unavailable: 'Indisponible', past: 'Période terminée' },
+      en: { available: 'Available', unavailable: 'Unavailable', past: 'Past period' },
+      es: { available: 'Disponible', unavailable: 'No disponible', past: 'Período terminado' },
+      nl: { available: 'Beschikbaar', unavailable: 'Niet beschikbaar', past: 'Afgelopen periode' },
+      de: { available: 'Verfügbar', unavailable: 'Nicht verfügbar', past: 'Abgelaufene Periode' }
+    };
+    var key = (lang || 'fr').toLowerCase();
+    return map[key] || map.fr;
   }
 
   function parseICal(text){
@@ -30,17 +32,16 @@
     var lines = [];
     for(var i=0;i<raw.length;i++){
       var ln = raw[i];
-      if((ln.charAt(0)===' ' || ln.charAt(0)==='\t') && lines.length){
+      if((ln.charAt(0) === ' ' || ln.charAt(0) === '\t') && lines.length){
         lines[lines.length-1] += ln.slice(1);
       } else {
         lines.push(ln);
       }
     }
-
     var events=[]; var cur=null;
     for(var i=0;i<lines.length;i++){
       var l = lines[i];
-      if(/^BEGIN:VEVENT/i.test(l)){ cur = {}; continue; }
+      if(/^BEGIN:VEVENT/i.test(l)){ cur={}; continue; }
       if(/^END:VEVENT/i.test(l)){ if(cur) events.push(cur); cur=null; continue; }
       if(!cur) continue;
       var m = l.match(/^([A-Z0-9-]+)(?:;[^:]*)?:(.*)$/i);
@@ -50,16 +51,13 @@
         cur[key] = (cur[key] || '') + val;
       }
     }
-
     return events.map(function(e){
       function toDate(s){
         try{
           if(!s) return null;
           s = (''+s).trim();
           if(/T/.test(s)){
-            var iso = s.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){
-              return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z';
-            });
+            var iso = s.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){ return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z'; });
             return new Date(iso);
           }
           return new Date(s.substr(0,4)+'-'+s.substr(4,2)+'-'+s.substr(6,2)+'T00:00:00Z');
@@ -73,160 +71,69 @@
   }
 
   function daysBetween(a,b){
-    var out=[];
-    var cur=new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate()));
-    var end=new Date(Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()));
-    while(cur < end){
-      out.push(new Date(cur));
-      cur.setUTCDate(cur.getUTCDate()+1);
-    }
+    var out=[]; var cur=new Date(Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate())); var end=new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate()));
+    while(cur < end){ out.push(new Date(cur)); cur.setUTCDate(cur.getUTCDate()+1); }
     return out;
   }
 
-  function isoDateKey(date){
-    var d = new Date(date);
-    return d.toISOString().slice(0,10);
-  }
-
-  function isPastDateKey(key){
-    if(!key) return false;
-    var today = new Date();
-    var todayKey = isoDateKey(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())));
-    return key < todayKey;
-  }
+  function isoDateKey(date){ var d = new Date(date); return d.toISOString().slice(0,10); }
+  function isPastDateKey(key){ if(!key) return false; var today = new Date(); var todayKey = isoDateKey(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))); return key < todayKey; }
 
   function renderCalendar(container, unavailableSet){
     container.innerHTML = '';
-    var centre = arguments.length > 2 && arguments[2] ? new Date(arguments[2]) : new Date();
+    var stateLabels = arguments.length > 2 && arguments[2] ? arguments[2] : { available:'Disponible', unavailable:'Indisponible', past:'Période terminée' };
+    var centre = arguments.length > 3 && arguments[3] ? new Date(arguments[3]) : new Date();
     centre = new Date(Date.UTC(centre.getFullYear(), centre.getMonth(), 1));
     var months = 3;
-    var wrapper = document.createElement('div');
-    wrapper.className = 'airbnb-calendar-wrapper';
-    wrapper.style.display = 'grid';
-    wrapper.style.gridTemplateColumns = 'repeat(auto-fit,minmax(220px,1fr))';
-    wrapper.style.gap = '12px';
+    var wrapper = document.createElement('div'); wrapper.className='airbnb-calendar-wrapper'; wrapper.style.display='grid'; wrapper.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; wrapper.style.gap='12px';
 
     for(var m=0;m<months;m++){
       var d = new Date(Date.UTC(centre.getUTCFullYear(), centre.getUTCMonth()-1 + m, 1));
-      var monthBox = document.createElement('div');
-      monthBox.style.background = '#fff';
-      monthBox.style.padding = '8px';
-      monthBox.style.border = '1px solid #e6e6e6';
-      monthBox.style.borderRadius = '6px';
-
-      var title = document.createElement('h4');
-      title.style.margin = '0 0 8px';
-      title.style.fontSize = '1rem';
-      title.textContent = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-      monthBox.appendChild(title);
-
-      var grid = document.createElement('div');
-      grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = 'repeat(7,1fr)';
-      grid.style.gap = '4px';
-
+      var monthBox = document.createElement('div'); monthBox.style.background='#fff'; monthBox.style.padding='8px'; monthBox.style.border='1px solid #e6e6e6'; monthBox.style.borderRadius='6px';
+      var title = document.createElement('h4'); title.style.margin='0 0 8px'; title.style.fontSize='1rem'; title.textContent = d.toLocaleString(undefined,{month:'long', year:'numeric'}); monthBox.appendChild(title);
+      var grid = document.createElement('div'); grid.style.display='grid'; grid.style.gridTemplateColumns='repeat(7,1fr)'; grid.style.gap='4px';
       var days = ['D','L','M','M','J','V','S'];
-      for(var di=0;di<7;di++){
-        var hd = document.createElement('div');
-        hd.style.textAlign = 'center';
-        hd.style.fontSize = '0.8rem';
-        hd.style.fontWeight = '600';
-        hd.style.color = '#666';
-        hd.textContent = days[di];
-        grid.appendChild(hd);
-      }
-
-      var firstDay = d.getUTCDay();
-      for(var b=0;b<firstDay;b++){
-        var blank = document.createElement('div');
-        blank.innerHTML = '&nbsp;';
-        blank.style.minHeight = '34px';
-        grid.appendChild(blank);
-      }
-
-      var month = d.getUTCMonth();
-      var dayCursor = new Date(d);
-      while(dayCursor.getUTCMonth() === month){
+      for(var di=0;di<7;di++){ var hd=document.createElement('div'); hd.style.textAlign='center'; hd.style.fontSize='0.8rem'; hd.style.fontWeight='600'; hd.style.color='#666'; hd.textContent=days[di]; grid.appendChild(hd); }
+      var firstDay = d.getUTCDay(); for(var b=0;b<firstDay;b++){ var blank=document.createElement('div'); blank.innerHTML='&nbsp;'; blank.style.minHeight='34px'; grid.appendChild(blank); }
+      var month = d.getUTCMonth(); var dayCursor = new Date(d);
+      while(dayCursor.getUTCMonth()===month){
         var cell = document.createElement('div');
-        cell.style.minHeight = '34px';
-        cell.style.padding = '4px';
-        cell.style.borderRadius = '4px';
-        cell.style.textAlign = 'right';
-        cell.style.fontSize = '0.9rem';
-        cell.style.border = '1px solid transparent';
-        var dayNum = dayCursor.getUTCDate();
-        cell.textContent = dayNum;
+        cell.style.minHeight='34px'; cell.style.padding='4px'; cell.style.borderRadius='4px'; cell.style.textAlign='right'; cell.style.fontSize='0.9rem'; cell.style.border='1px solid transparent';
+        cell.textContent = dayCursor.getUTCDate();
         var key = isoDateKey(dayCursor);
-
         if(unavailableSet.has(key)){
-          cell.style.background = '#ffefef';
-          cell.style.color = '#b00000';
-          cell.style.borderColor = '#f3c9c9';
-          cell.title = 'Indisponible';
+          cell.style.background='#ffefef'; cell.style.color='#b00000'; cell.style.borderColor='#f3c9c9'; cell.title = stateLabels.unavailable || 'Indisponible';
         } else if(isPastDateKey(key)){
-          cell.style.background = '#f1f3f5';
-          cell.style.color = '#6b7280';
-          cell.style.borderColor = '#e5e7eb';
-          cell.title = 'Période terminée';
+          cell.style.background='#f1f3f5'; cell.style.color='#6b7280'; cell.style.borderColor='#e5e7eb'; cell.title = stateLabels.past || 'Période terminée';
         } else {
-          cell.style.background = '#eafaf1';
-          cell.style.color = '#0d7a4a';
-          cell.style.borderColor = '#cfeedd';
-          cell.title = 'Disponible';
+          cell.style.background='#eafaf1'; cell.style.color='#0d7a4a'; cell.style.borderColor='#cfeedd'; cell.title = stateLabels.available || 'Disponible';
         }
-
         grid.appendChild(cell);
         dayCursor.setUTCDate(dayCursor.getUTCDate()+1);
       }
-
-      monthBox.appendChild(grid);
-      wrapper.appendChild(monthBox);
+      monthBox.appendChild(grid); wrapper.appendChild(monthBox);
     }
 
-    var legend = document.createElement('div');
-    legend.className = 'airbnb-calendar-legend';
-    legend.style.gridColumn = '1/-1';
-    legend.style.marginTop = '8px';
-    legend.style.display = 'flex';
-    legend.style.alignItems = 'center';
-    legend.style.justifyContent = 'space-between';
-    legend.style.gap = '12px';
-    legend.style.flexWrap = 'wrap';
-
-    var keys = document.createElement('div');
-    keys.className = 'legend-keys';
+    var legend = document.createElement('div'); legend.className='airbnb-calendar-legend'; legend.style.gridColumn='1/-1'; legend.style.marginTop='8px'; legend.style.display='flex'; legend.style.alignItems='center'; legend.style.justifyContent='space-between'; legend.style.gap='12px'; legend.style.flexWrap='wrap';
+    var keys = document.createElement('div'); keys.className='legend-keys';
     keys.innerHTML = [
-      '<small><span style="display:inline-block;width:12px;height:12px;background:#eafaf1;border:1px solid #cfeedd;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Disponible</small>',
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#eafaf1;border:1px solid #cfeedd;border-radius:2px;margin-right:6px;vertical-align:middle"></span>' + (stateLabels.available || 'Disponible') + '</small>',
       '&nbsp;&nbsp;',
-      '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border:1px solid #f3c9c9;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Indisponible</small>',
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#ffefef;border:1px solid #f3c9c9;border-radius:2px;margin-right:6px;vertical-align:middle"></span>' + (stateLabels.unavailable || 'Indisponible') + '</small>',
       '&nbsp;&nbsp;',
-      '<small><span style="display:inline-block;width:12px;height:12px;background:#f1f3f5;border:1px solid #e5e7eb;border-radius:2px;margin-right:6px;vertical-align:middle"></span>Période terminée</small>'
+      '<small><span style="display:inline-block;width:12px;height:12px;background:#f1f3f5;border:1px solid #e5e7eb;border-radius:2px;margin-right:6px;vertical-align:middle"></span>' + (stateLabels.past || 'Période terminée') + '</small>'
     ].join('');
-
-    var updated = document.createElement('div');
-    updated.className = 'legend-updated';
-    updated.style.color = '#666';
-    updated.style.fontSize = '0.85rem';
-    updated.style.fontStyle = 'italic';
-
-    legend.appendChild(keys);
-    legend.appendChild(updated);
-
-    container.appendChild(wrapper);
-    container.appendChild(legend);
+    var updated = document.createElement('div'); updated.className='legend-updated'; updated.style.color='#666'; updated.style.fontSize='0.85rem'; updated.style.fontStyle='italic';
+    legend.appendChild(keys); legend.appendChild(updated); container.appendChild(wrapper); container.appendChild(legend);
   }
 
   function computeRangesFromSet(unavailableSet){
-    var dates = Array.from(unavailableSet).sort();
-    var ranges = [];
-    var start = null, end = null;
+    var dates=Array.from(unavailableSet).sort(); var ranges=[]; var start=null, end=null;
     dates.forEach(function(d){
-      if(!start){ start = d; end = d; return; }
-      var prev = new Date(end);
-      prev.setUTCDate(prev.getUTCDate()+1);
-      var prevKey = prev.toISOString().slice(0,10);
+      if(!start){ start=d; end=d; return; }
+      var prev = new Date(end); prev.setUTCDate(prev.getUTCDate()+1); var prevKey = prev.toISOString().slice(0,10);
       if(d === prevKey){ end = d; }
-      else { ranges.push([start,end]); start = d; end = d; }
+      else { ranges.push([start,end]); start=d; end=d; }
     });
     if(start) ranges.push([start,end]);
     return ranges;
@@ -235,20 +142,10 @@
   function mountAll(icalUrlOverride){
     fetchSiteVars().then(function(cfg){
       var defaultIcal = cfg && (cfg.airbnb_ical || cfg.airbnb_ical_url || cfg.AIRBNB_ICAL);
-
       function formatLastRefresh(label, d){
         var prefix = label || 'Dernière mise à jour :';
-        try{
-          return prefix + ' ' + d.toLocaleString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }catch(e){
-          try{ return prefix + ' ' + (d && d.toString ? d.toString() : ''); }catch(e2){ return prefix; }
-        }
+        try{ return prefix + ' ' + d.toLocaleString(undefined,{ year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }); }
+        catch(e){ try{ return prefix + ' ' + (d && d.toString ? d.toString() : ''); }catch(e2){ return prefix; } }
       }
 
       function detectLang(){
@@ -262,26 +159,31 @@
       }
 
       var lang = (detectLang() || 'fr').toLowerCase();
-      var labels = {
-        loading: 'Chargement du calendrier…',
-        updated: 'Calendrier mis à jour',
-        error_fetch: 'Erreur de chargement du calendrier',
-        no_ical: 'Aucune source de calendrier disponible.'
-      };
-
-      var nodes = document.querySelectorAll('.airbnb-calendar');
-      if(!nodes || nodes.length===0){
-        console.warn('airbnb-calendar: no .airbnb-calendar nodes found');
+      var stateLabels = getStateLabels(lang);
+      var labels = null;
+      try{
+        if(window.__SEO_LABELS_CACHE__ && window.__SEO_LABELS_CACHE__[lang] && window.__SEO_LABELS_CACHE__[lang].calendar_labels){
+          labels = window.__SEO_LABELS_CACHE__[lang].calendar_labels;
+        }
+      }catch(e){}
+      if(!labels){
+        labels = (cfg && cfg.calendar_labels && cfg.calendar_labels[lang]) || (cfg && cfg.calendar_labels && cfg.calendar_labels['fr']) || {
+          loading:'Chargement du calendrier…', refresh:'Actualiser', no_reservations:'Aucune réservation affichée.', reserved_title:'Périodes réservées', view_listing:'Voir l\'annonce Airbnb', error_fetch:'Impossible de charger le calendrier.', refreshing:'Actualisation…', last_updated:'Dernière mise à jour :', updated:'Sélection du mois', refresh_error:'Erreur d\'actualisation', no_ical:'Aucun calendrier configuré.', available: stateLabels.available, unavailable: stateLabels.unavailable, past: stateLabels.past
+        };
       }
+      if(labels.available) stateLabels.available = labels.available;
+      if(labels.unavailable) stateLabels.unavailable = labels.unavailable;
+      if(labels.past) stateLabels.past = labels.past;
+
+      var lastUpdatedLabel = labels && (labels.last_updated || labels.lastUpdated || labels.last_update) ? (labels.last_updated || labels.lastUpdated || labels.last_update) : 'Dernière mise à jour :';
+      var nodes = document.querySelectorAll('.airbnb-calendar');
+      if(!nodes || nodes.length===0){ console.warn('airbnb-calendar: no .airbnb-calendar nodes found'); }
 
       nodes.forEach(function(node){
         try{ node.classList.add('airbnb-calendar-initialized'); }catch(e){}
         var ical = node.dataset.ical || icalUrlOverride || defaultIcal;
-        if(typeof ical === 'string' && /\{\{.*\}\}/.test(ical)){
-          ical = icalUrlOverride || defaultIcal;
-        }
+        try{ if(typeof ical === 'string' && /\{\{.*\}\}/.test(ical)){ ical = icalUrlOverride || defaultIcal; } }catch(e){}
         if(!ical){ node.innerHTML = '<p>' + labels.no_ical + '</p>'; return; }
-
         try{
           if(ical && !(ical.indexOf('http://')===0 || ical.indexOf('https://')===0)){
             var icalNorm = (''+ical).replace(/^\/+/, '');
@@ -295,71 +197,23 @@
         }catch(e){}
 
         node.innerHTML = '';
-        var debugMarker = document.createElement('div');
-        debugMarker.style.fontSize = '0.9rem';
-        debugMarker.style.color = '#666';
-        debugMarker.style.textAlign = 'center';
-        debugMarker.style.marginBottom = '6px';
-        debugMarker.textContent = labels.loading;
-        node.appendChild(debugMarker);
-
-        var status = document.createElement('div');
-        status.style.fontSize = '0.95rem';
-        status.style.color = '#666';
-        status.textContent = labels.loading;
-
-        var monthSelect = document.createElement('select');
-        monthSelect.style.padding = '6px 8px';
-        monthSelect.style.border = '1px solid #ddd';
-        monthSelect.style.borderRadius = '6px';
+        var debugMarker = document.createElement('div'); debugMarker.style.fontSize='0.9rem'; debugMarker.style.color='#666'; debugMarker.style.textAlign='center'; debugMarker.style.marginBottom='6px'; debugMarker.textContent = labels.loading; node.appendChild(debugMarker);
+        var topBar = document.createElement('div'); topBar.style.display='flex'; topBar.style.justifyContent='space-between'; topBar.style.alignItems='center'; topBar.style.marginBottom='6px';
+        var status = document.createElement('div'); status.style.fontSize='0.95rem'; status.style.color='#666'; status.textContent=labels.loading;
+        var selWrap = document.createElement('div'); selWrap.style.display='flex'; selWrap.style.alignItems='center'; selWrap.style.gap='8px';
+        var monthSelect = document.createElement('select'); monthSelect.style.padding='6px 8px'; monthSelect.style.border='1px solid #ddd'; monthSelect.style.borderRadius='6px';
         var monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-        for(var mi=0;mi<12;mi++){
-          var mo = document.createElement('option');
-          mo.value = (mi + 1).toString().padStart(2,'0');
-          mo.textContent = monthNames[mi];
-          monthSelect.appendChild(mo);
-        }
-
-        var yearSelect = document.createElement('select');
-        yearSelect.style.padding = '6px 8px';
-        yearSelect.style.border = '1px solid #ddd';
-        yearSelect.style.borderRadius = '6px';
-        var nowLocal = new Date(); var startY = nowLocal.getFullYear();
-        for(var y=0;y<6;y++){
-          var yo = document.createElement('option');
-          yo.value = (startY + y);
-          yo.textContent = (startY + y);
-          yearSelect.appendChild(yo);
-        }
-        monthSelect.value = (nowLocal.getMonth()+1).toString().padStart(2,'0');
-        yearSelect.value = startY;
-
-        var topBar = document.createElement('div');
-        topBar.style.display = 'flex';
-        topBar.style.justifyContent = 'space-between';
-        topBar.style.alignItems = 'center';
-        topBar.style.marginBottom = '6px';
-        topBar.style.gap = '8px';
-        topBar.style.flexWrap = 'wrap';
-
-        var left = document.createElement('div');
-        left.style.display = 'flex';
-        left.style.alignItems = 'center';
-        left.style.gap = '10px';
-        left.style.flexWrap = 'wrap';
-        left.appendChild(status);
-        left.appendChild(monthSelect);
-        left.appendChild(yearSelect);
-        topBar.appendChild(left);
-        node.appendChild(topBar);
-
-        var body = document.createElement('div');
-        body.className = 'airbnb-calendar-body';
-        node.appendChild(body);
+        for(var mi=0;mi<12;mi++){ var mo = document.createElement('option'); mo.value=(mi+1).toString().padStart(2,'0'); mo.textContent=monthNames[mi]; monthSelect.appendChild(mo); }
+        var yearSelect = document.createElement('select'); yearSelect.style.padding='6px 8px'; yearSelect.style.border='1px solid #ddd'; yearSelect.style.borderRadius='6px';
+        var nowLocal = new Date(); var startY = nowLocal.getFullYear(); for(var y=0;y<6;y++){ var yo=document.createElement('option'); yo.value=(startY+y); yo.textContent=(startY+y); yearSelect.appendChild(yo); }
+        monthSelect.value=(nowLocal.getMonth()+1).toString().padStart(2,'0'); yearSelect.value=startY;
+        selWrap.appendChild(monthSelect); selWrap.appendChild(yearSelect);
+        var left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='8px'; left.appendChild(status); left.appendChild(selWrap);
+        topBar.appendChild(left); node.appendChild(topBar);
+        var body = document.createElement('div'); body.className='airbnb-calendar-body'; node.appendChild(body);
 
         fetch(ical).then(function(r){ if(!r.ok) throw new Error('ical fetch failed'); return r.text(); }).then(function(txt){
-          debugMarker.textContent = labels.loading + ' (récupération…)';
-
+          try{ debugMarker.textContent = labels.loading + ' (récupération…)' }catch(e){}
           var syncUpdatedAt = null;
           try{
             var unfolded = (''+txt).replace(/\r?\n[ \t]/g, '');
@@ -370,43 +224,26 @@
                 if(/T/.test(stamp)){
                   var iso = stamp.replace(/([0-9]{8})T([0-9]{6})Z?/, function(_,d,t){ return d.substr(0,4)+'-'+d.substr(4,2)+'-'+d.substr(6,2)+'T'+t.substr(0,2)+':'+t.substr(2,2)+':'+t.substr(4,2)+'Z'; });
                   syncUpdatedAt = new Date(iso);
-                } else {
-                  syncUpdatedAt = new Date(stamp.substr(0,4)+'-'+stamp.substr(4,2)+'-'+stamp.substr(6,2)+'T00:00:00Z');
-                }
+                } else { syncUpdatedAt = new Date(stamp.substr(0,4)+'-'+stamp.substr(4,2)+'-'+stamp.substr(6,2)+'T00:00:00Z'); }
               }catch(e2){ syncUpdatedAt = null; }
             }
             if(syncUpdatedAt && isNaN(syncUpdatedAt.getTime())) syncUpdatedAt = null;
           }catch(e){}
 
           var events = parseICal(txt);
-          var icsUpdatedAt = null;
-          events.forEach(function(ev){
-            if(ev.dtstamp && (!icsUpdatedAt || ev.dtstamp > icsUpdatedAt)) icsUpdatedAt = ev.dtstamp;
-          });
-
-          var unavailable = new Set();
-          events.forEach(function(ev){
-            var s = ev.start; var e = ev.end || ev.start;
-            var daysList = daysBetween(s,e);
-            daysList.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); });
-          });
+          var icsUpdatedAt = null; events.forEach(function(ev){ if(ev.dtstamp && (!icsUpdatedAt || ev.dtstamp > icsUpdatedAt)) icsUpdatedAt = ev.dtstamp; });
+          var unavailable = new Set(); events.forEach(function(ev){ var s=ev.start; var e=ev.end || ev.start; var days = daysBetween(s,e); days.forEach(function(d){ unavailable.add(d.toISOString().slice(0,10)); }); });
 
           function parseInputMonth(){
-            try{
-              var y = parseInt(yearSelect.value,10) || nowLocal.getFullYear();
-              var m = parseInt(monthSelect.value,10) - 1;
-              return new Date(y, m, 1);
-            }catch(e){ return new Date(); }
+            try{ var y = parseInt(yearSelect.value,10) || nowLocal.getFullYear(); var m = parseInt(monthSelect.value,10)-1; return new Date(y,m,1); }catch(e){ return new Date(); }
           }
 
           function doRender(centerDate){
-            body.innerHTML = '';
-            renderCalendar(body, unavailable, centerDate);
-            var refreshedAt = syncUpdatedAt || icsUpdatedAt || new Date();
-            var upd = body.querySelector('.airbnb-calendar-legend .legend-updated');
-            if(upd) upd.textContent = formatLastRefresh('Dernière mise à jour :', refreshedAt);
+            body.innerHTML='';
+            renderCalendar(body, unavailable, stateLabels, centerDate);
+            try{ var refreshedAt = syncUpdatedAt || icsUpdatedAt || new Date(); var upd = body.querySelector('.airbnb-calendar-legend .legend-updated'); if(upd) upd.textContent = formatLastRefresh(lastUpdatedLabel, refreshedAt); }catch(e){}
             status.textContent = labels.updated;
-            try{ debugMarker.style.display = 'none'; }catch(e){}
+            try{ debugMarker.style.display='none'; }catch(e){}
           }
 
           doRender(parseInputMonth());
@@ -415,48 +252,21 @@
 
           var listingUrl = (cfg && (cfg.airbnb_url || cfg.airbnb)) || 'https://www.airbnb.fr';
           var buttonText = (cfg && ((cfg.airbnb_texts && cfg.airbnb_texts[lang]) || cfg.airbnb_button_text || cfg.airbnb_text)) || '📍 Réserver via Airbnb Direct';
-          var link = document.createElement('p');
-          link.style.textAlign = 'center';
-          link.style.marginTop = '8px';
-          var a = document.createElement('a');
-          a.href = listingUrl;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.textContent = buttonText;
-          a.className = 'airbnb-link';
-          link.appendChild(a);
-          node.appendChild(link);
+          try{ if(cfg && cfg.airbnb_url) console.log('airbnb-calendar: using site-vars airbnb_url ->', cfg.airbnb_url); else console.log('airbnb-calendar: using fallback listing URL'); }catch(e){}
+          var link = document.createElement('p'); link.style.textAlign='center'; link.style.marginTop='8px';
+          var a = document.createElement('a'); a.href=listingUrl; a.target='_blank'; a.rel='noopener'; a.textContent = buttonText; a.className='airbnb-link';
+          link.appendChild(a); node.appendChild(link);
         }).catch(function(err){
-          console.error('airbnb-calendar: fetch error', err);
-          status.textContent = labels.error_fetch;
-          node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+((cfg && (cfg.airbnb_url || cfg.airbnb)) || '#')+'" target="_blank" rel="noopener">Voir l’annonce</a></p>';
+          console.error('airbnb-calendar: fetch error', err); status.textContent = labels.error_fetch; node.innerHTML = '<p>' + labels.error_fetch + ' <a href="'+(cfg.airbnb_url||cfg.airbnb||'#')+'" target="_blank" rel="noopener">'+labels.view_listing+'</a></p>';
         });
       });
-    }).catch(function(){
-      var nodes = document.querySelectorAll('.airbnb-calendar');
-      nodes.forEach(function(n){ n.innerHTML = '<p>Configuration indisponible.</p>'; });
-    });
+    }).catch(function(){ var nodes=document.querySelectorAll('.airbnb-calendar'); nodes.forEach(function(n){ n.innerHTML='<p>Configuration indisponible.</p>'; }); });
   }
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ mountAll(); });
-  } else {
-    mountAll();
-  }
-
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ mountAll(); }); else mountAll();
   try{
     var __airbnbMo = new MutationObserver(function(muts){
-      var found = false;
-      muts.forEach(function(m){
-        Array.prototype.forEach.call(m.addedNodes || [], function(n){
-          if(!n) return;
-          if(n.nodeType === 1){
-            if((n.classList && n.classList.contains && n.classList.contains('airbnb-calendar')) || (n.querySelector && n.querySelector('.airbnb-calendar'))){ found = true; }
-          }
-        });
-      });
-      if(found){ try{ mountAll(); }catch(e){} }
-    });
-    __airbnbMo.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      var found = false; muts.forEach(function(m){ Array.prototype.forEach.call(m.addedNodes||[], function(n){ if(!n) return; if(n.nodeType===1){ if((n.classList && n.classList.contains && n.classList.contains('airbnb-calendar')) || (n.querySelector && n.querySelector('.airbnb-calendar'))){ found = true; } } }); }); if(found){ try{ mountAll(); }catch(e){} }
+    }); __airbnbMo.observe(document.body || document.documentElement, { childList:true, subtree:true });
   }catch(e){}
 })();
